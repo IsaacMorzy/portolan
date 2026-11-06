@@ -120,3 +120,17 @@ Breaking one of these is worse than not finishing.
   loudly.
 - **Don't read from the database on a loop.** Name your columns, limit list
   reads, subscribe instead of polling.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues on `IsaacMorzy/codegraph`, driven by the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical roles, each label string equal to its role name (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.

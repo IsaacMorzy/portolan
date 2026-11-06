@@ -21,8 +21,8 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/">) {
         <span className="text-line">/</span>
         <OrganizationSwitcher
           hidePersonal
-          afterSelectOrganizationUrl="/"
-          afterCreateOrganizationUrl="/"
+          afterSelectOrganizationUrl="/dashboard"
+          afterCreateOrganizationUrl="/dashboard"
           afterLeaveOrganizationUrl="/start"
         />
         <div className="ml-auto flex items-center gap-3">

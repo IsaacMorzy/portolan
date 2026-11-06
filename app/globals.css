@@ -76,3 +76,53 @@ body {
   stroke: var(--edge);
   fill: none;
 }
+
+/*
+ * Landing page motion. Two gestures only: a slow draw along a graph edge, so
+ * the map reads as "traced from real code", and a short rise for sections as
+ * they enter. Both are subtle enough to survive being ignored, and both stop
+ * entirely under prefers-reduced-motion.
+ */
+@keyframes flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.flow-edge {
+  stroke-dasharray: 3 5;
+  animation: flow 2.4s linear infinite;
+}
+
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* A blueprint grid for the hero map panel: 1px lines on a wide spacing, faint
+   enough to sit under the nodes without competing with them. */
+.blueprint {
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+  background-position: -1px -1px;
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, black 40%, transparent 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-edge,
+  .rise {
+    animation: none;
+  }
+}

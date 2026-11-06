@@ -17,7 +17,7 @@ export function Activate() {
     started.current = true;
     resolveOrganization()
       .then((organization) => setActive({ organization }))
-      .then(() => router.replace("/"))
+      .then(() => router.replace("/dashboard"))
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
   }, [setActive, router]);
 

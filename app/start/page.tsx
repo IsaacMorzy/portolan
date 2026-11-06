@@ -4,7 +4,7 @@ import { Activate } from "./activate";
 
 export default async function StartPage() {
   const { orgId } = await auth();
-  if (orgId) redirect("/");
+  if (orgId) redirect("/dashboard");
 
   return (
     <div className="flex flex-1 items-center justify-center">

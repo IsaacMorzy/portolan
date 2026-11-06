@@ -1,6 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublic = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+// The landing page and the auth screens are the only surfaces a signed-out
+// visitor may see. The landing page is served at "/" so anyone who arrives
+// from a link reads what the product does before being asked to sign in;
+// everything under /dashboard and /analyses stays behind auth.
+const isPublic = createRouteMatcher(["/", "/sign-in(.*)", "/sign-up(.*)"]);
 
 // Protection happens here, before any route renders, so a signed-out visitor
 // gets a redirect and never receives the page's HTML.
