@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { isModelRole, MODEL_ROLES, type ModelRole } from "../roles.ts";
 import { traceable } from "langsmith/traceable";
-import { ai, MODELS, traceConfig } from "./client.ts";
+import { ai, model, modelId, provider, traceConfig } from "./client.ts";
 import {
   CLASSIFY_SYSTEM,
   classifyMessage,
@@ -41,27 +41,27 @@ export function cacheKey(task: Task, model: string, input: unknown): string {
 }
 
 export async function explainFile(input: FileInput, deps: { cache: Cache; source: SourceOf }): Promise<Explanation> {
-  const model = MODELS.explain;
+  const m = model("explain");
   const run = traceable(async (question: FileInput): Promise<Explanation> => {
-    const key = cacheKey("explain-file", model, question);
+    const key = cacheKey("explain-file", m, question);
     const hit = await deps.cache.read(key);
-    if (hit !== null) return { body: hit, model, cached: true };
-    const body = await complete(model, EXPLAIN_FILE_SYSTEM, explainFileMessage(question, capped(await deps.source())));
-    await deps.cache.write({ key, task: "explain-file", model, body });
-    return { body, model, cached: false };
+    if (hit !== null) return { body: hit, model: m, cached: true };
+    const body = await complete(m, EXPLAIN_FILE_SYSTEM, explainFileMessage(question, capped(await deps.source())));
+    await deps.cache.write({ key, task: "explain-file", model: m, body });
+    return { body, model: m, cached: false };
   }, traceConfig("explain-file"));
   return run(input);
 }
 
 export async function explainFolder(input: FolderInput, deps: { cache: Cache }): Promise<Explanation> {
-  const model = MODELS.explain;
+  const m = model("explain");
   const run = traceable(async (question: FolderInput): Promise<Explanation> => {
-    const key = cacheKey("explain-folder", model, question);
+    const key = cacheKey("explain-folder", m, question);
     const hit = await deps.cache.read(key);
-    if (hit !== null) return { body: hit, model, cached: true };
-    const body = await complete(model, EXPLAIN_FOLDER_SYSTEM, explainFolderMessage(question));
-    await deps.cache.write({ key, task: "explain-folder", model, body });
-    return { body, model, cached: false };
+    if (hit !== null) return { body: hit, model: m, cached: true };
+    const body = await complete(m, EXPLAIN_FOLDER_SYSTEM, explainFolderMessage(question));
+    await deps.cache.write({ key, task: "explain-folder", model: m, body });
+    return { body, model: m, cached: false };
   }, traceConfig("explain-folder"));
   return run(input);
 }
@@ -71,40 +71,80 @@ export async function explainFolder(input: FolderInput, deps: { cache: Cache }):
 const NONE = "none";
 
 export async function classifyFile(input: ClassifyInput, deps: { cache: Cache; source: SourceOf }): Promise<{ role: ModelRole | null; cached: boolean }> {
-  const model = MODELS.classify;
+  const m = model("classify");
   const run = traceable(async (question: ClassifyInput): Promise<{ role: ModelRole | null; cached: boolean }> => {
-    const key = cacheKey("classify-file", model, question);
+    const key = cacheKey("classify-file", m, question);
     const hit = await deps.cache.read(key);
     if (hit !== null) return { role: parseRole(hit), cached: true };
     const excerpt = (await deps.source()).split("\n").slice(0, EXCERPT_LINES).join("\n");
     const response = await ai().chat.completions.create({
-      model,
+      model: modelId(m),
       messages: [
-        { role: "system", content: CLASSIFY_SYSTEM },
+        { role: "system", content: classifySystem() },
         { role: "user", content: classifyMessage(question, excerpt) },
       ],
-      reasoning_effort: "low",
+      ...reasoning("low"),
+      ...roleSchema(),
+    });
+    const answer = readRole(response.choices[0]?.message.content ?? null);
+    // Parsed before caching, so a refused answer is never stored and served.
+    const role = parseRole(answer);
+    await deps.cache.write({ key, task: "classify-file", model: m, body: answer });
+    return { role, cached: false };
+  }, traceConfig("classify-file"));
+  return run(input);
+}
+
+/**
+ * Both providers accept `reasoning_effort`, but with different value sets:
+ * OpenAI wants none/low/medium/high, DeepSeek none/low/high/max. "low" is
+ * valid for both, so the call sites pass that and this keeps the field
+ * explicit for each backend.
+ */
+function reasoning(level: "low") {
+  return { reasoning_effort: level } as const;
+}
+
+/**
+ * The role answer must be JSON, but the two backends enforce that differently.
+ * OpenAI supports a strict `json_schema`; DeepSeek only supports
+ * `json_object`, which guarantees syntactically valid JSON but not a shape,
+ * so the enum is restated in the instruction and the answer is validated by
+ * parseRole either way. A provider that gained schema support should be
+ * switched here, not at the call site.
+ */
+function roleSchema() {
+  const allowed = [...MODEL_ROLES, NONE];
+  if (provider() === "openai") {
+    return {
       response_format: {
-        type: "json_schema",
+        type: "json_schema" as const,
         json_schema: {
           name: "file_role",
           strict: true,
           schema: {
             type: "object",
-            properties: { role: { type: "string", enum: [...MODEL_ROLES, NONE] } },
+            properties: { role: { type: "string", enum: allowed } },
             required: ["role"],
             additionalProperties: false,
           },
         },
       },
-    });
-    const answer = readRole(response.choices[0]?.message.content ?? null);
-    // Parsed before caching, so a refused answer is never stored and served.
-    const role = parseRole(answer);
-    await deps.cache.write({ key, task: "classify-file", model, body: answer });
-    return { role, cached: false };
-  }, traceConfig("classify-file"));
-  return run(input);
+    };
+  }
+  // DeepSeek's json_object mode only guarantees valid JSON, and its docs warn
+  // that without a JSON instruction in the prompt the model can emit
+  // whitespace until the token limit. The shape is therefore spelled out in
+  // the system message below.
+  return { response_format: { type: "json_object" as const } };
+}
+
+/** The system message for classification, adding the JSON shape only for the
+ * provider whose response_format can't enforce it. */
+function classifySystem(): string {
+  if (provider() === "openai") return CLASSIFY_SYSTEM;
+  const allowed = [...MODEL_ROLES, NONE];
+  return `${CLASSIFY_SYSTEM}\n\nReply with only a JSON object of the form {"role": "<one of: ${allowed.join(", ")}>"} and nothing else.`;
 }
 
 function parseRole(answer: string): ModelRole | null {
@@ -123,18 +163,21 @@ function readRole(content: string | null): string {
   return role;
 }
 
-async function complete(model: string, system: string, user: string): Promise<string> {
+async function complete(tag: ReturnType<typeof model>, system: string, user: string): Promise<string> {
+  const id = modelId(tag);
   const response = await ai().chat.completions.create({
-    model,
+    model: id,
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },
     ],
-    reasoning_effort: "low",
-    verbosity: "low",
+    ...reasoning("low"),
+    // `verbosity` is OpenAI-only; DeepSeek rejects unknown fields, so it is
+    // sent only where the backend accepts it.
+    ...(provider() === "openai" ? { verbosity: "low" as const } : {}),
   });
   const body = response.choices[0]?.message.content?.trim();
-  if (!body) throw new Error(`${model} returned an empty answer (finish reason: ${response.choices[0]?.finish_reason ?? "none"})`);
+  if (!body) throw new Error(`${id} returned an empty answer (finish reason: ${response.choices[0]?.finish_reason ?? "none"})`);
   return body;
 }
 
