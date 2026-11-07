@@ -15,7 +15,13 @@
   --fg: light-dark(#18181b, #e6e6e9);
   --fg-muted: light-dark(#63636b, #9d9da7);
   --accent: light-dark(#2563eb, #4f8bff);
-  --accent-fg: #ffffff;
+  /* The accent is brighter in dark mode, so white on it only reaches 3.25:1 —
+     below AA. It had been fixed white in both themes, which is the exact shape
+     of bug that renders in one mode and not the other. Inverting it takes the
+     pair to 6.02:1 and keeps the vivid accent, which still clears 6.02 against
+     canvas for links. Darkening the accent instead would have dropped links to
+     3.76:1 to save the button. */
+  --accent-fg: light-dark(#ffffff, #0c0c0d);
 
   /* Direction: into a file, out of a file. */
   --incoming: light-dark(#15803d, #4ade80);

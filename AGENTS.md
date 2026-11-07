@@ -62,6 +62,135 @@ Say what shipped, what was skipped and why, and what is blocked on whom. One
 line of status at the end that is not a summary of the summary.
 
 
+## The factory
+
+This repo runs the loop the way Isaac Mwendwa's "What is a software factory?"
+describes it: the SDLC with as much of it as possible run by agents, and the
+trust moved to places the agent cannot soften. Four requirements separate a
+factory from a pile of prompts. All four are concrete files here, not
+aspirations:
+
+| Requirement | Where it lives | What breaks it |
+| --- | --- | --- |
+| **Repeatable inputs** | `prompts/NNNN-*.md` -> a `wayfinder:map` issue -> child tickets with a lane. Nothing gets built that is not filed first. | An idea that arrives in chat and gets built in the same turn. |
+| **Standardized tooling** | `pnpm test`, `pnpm e2e`, `npx tsc --noEmit`, `npx eslint .`, `pnpm build`. The same five, every time, in that order. | "I'll just check this one page." |
+| **Measurable output** | `scripts/e2e/budget.mjs` prints the number it rejected, never a verdict alone. A closing issue comment cites a commit. | "Looks good to me." |
+| **Retained context** | `docs/specs/`, `docs/architecture.md`, this file, and issue comments that say what was tried and what was refused. | A change with no sentence explaining its shape. |
+
+### The three trust layers
+
+Trust has to sit somewhere the agent cannot reach, because an agent that can
+edit its own test can make anything pass.
+
+**1. Black-box checks that know nothing.** `scripts/e2e/` drives the product the
+way a person does — a browser, an HTTP request, a screenshot. None of it imports
+app code. That is deliberate: refactoring the map view must not be able to break
+the check that says the map renders. `tests/` holds the white-box tests for pure
+functions; both exist, the black box carries the weight.
+
+**2. Architecture written down.** `docs/architecture.md` names the patterns and
+the vocabulary — the single gate, one guard per entry point, the seam. Written
+in words a model already understands so a generated change can be judged against
+it instead of against taste.
+
+**3. Adversarial checks that hold an opinion.** `budget.mjs` refuses a layout
+shift, a second `h1`, a missing canonical, a contrast pair that fails AA. These
+are not pass/fail on features; they are a standard that sends work back.
+
+### Fix the machine, not the model
+
+When a class of error escapes, the fix is a check, never a scolding. Every
+entry below is a real escape from this repo and the rule it produced:
+
+| Escape | The machine fix |
+| --- | --- |
+| `border` with no colour rendered as near-white in dark mode | Token-only styling; raw hex and bare `border` are refused in review |
+| A 90-character Tailwind arbitrary class compiled to **no CSS at all**, and the ticker was clipped for weeks | `budget.mjs` asserts layout; visual defects get a screenshot and a vision pass, not an assumption |
+| A single-column grid sized its track to its widest child and widened the page at 390px | `landing.mjs` fails on horizontal scroll at 390, every run |
+| `/api/graph` explained on every call, so a loop over filenames was a loop over model calls | Cost budgets per route (`lib/ratelimit.ts`), and the expensive part is opt-in |
+| An unauthenticated POST answered 307 locally and 200 in production while protecting identically | Assert the invariant (no data came back), not the status code |
+
+### Doing work here
+
+- **One request per prompt file.** Rewrite it, file it, then build it.
+- **One commit per idea**, message says what was measured.
+- **Prove it locally and against the deployment.** They differ; the difference
+  above is the proof.
+- **Close the loop.** A ticket closed with a commit sha, or left open with a
+  named blocker. Never a silent drop.
+
+## Tooling: what is wired, and when to reach for it
+
+Every row was used on this repository, not copied from a list. If a tool is not
+here it is because nobody needed it yet — that is a different thing from it not
+working.
+
+### Skills
+
+Skills live in `~/.agents/skills` (154 installed) plus two vendored under
+`.agents/skills/` for this project. Loading all of them is a way to spend the
+context budget on instructions nobody reads. These are the ones that earn it:
+
+| Skill | Load it when |
+| --- | --- |
+| `supabase` / `supabase-postgres-best-practices` | Any schema change, RLS policy, migration, or query that touches Postgres. Vendored in `.agents/skills/`, so they ship with the repo. |
+| `design-taste-frontend` | Any landing, marketing or auth surface. Its house rules (no eyebrows, no glass, no monograms, headlines <= 2 lines) are the reason half the Velora registry was refused. |
+| `ponytail` | Every code change. Lazy rung that holds: stdlib -> native -> installed dep -> one line. |
+| `wayfinder` + `to-tickets` | Splitting a request too big for one commit. Produces the map and the children. |
+| `web-quality-audit` | Performance, a11y, SEO sweeps. |
+| `code-review` | Before merging anything non-trivial. |
+
+### CLI
+
+| Command | What it is for here |
+| --- | --- |
+| `gh issue` / `gh pr` | The tracker. Lanes: `wayfinder:map`, `ready-for-agent`, `ready-for-human`, `needs-info`. Every claim in a closing comment cites a commit. |
+| `psql` | The live database, when the question is about what is actually stored. Connect with `SUPABASE_DB_PASSWORD` and `sslmode=require`. Never a schema guess when this is one command away. |
+| `pnpm` | Only package manager in use. `pnpm test`, `pnpm e2e`, `pnpm build`. |
+| `vercel` / the Vercel API | Deployment state, env vars, attack mode. `scripts/push-vercel-env.sh` for secrets. |
+| `npx tsc --noEmit`, `npx eslint .` | Non-negotiable before any claim of done. |
+| `node --test` | The test runner. No jest, no vitest, no framework. |
+| `curl` | Verifying a deployed header or status. `--max-redirs 0`, or you will measure the redirect target and believe you measured the route. |
+
+### MCP
+
+One browser driver is live; the rest sit disabled until the task needs them.
+
+| Server | State | When |
+| --- | --- | --- |
+| `chrome-debug` | on | Drives a Chrome already open on `--remote-debugging-port=9222`. It joins that profile, so it carries its cookies — the only client that gets past a Vercel or Cloudflare challenge, which a fresh headless browser cannot solve. |
+| `chrome-devtools` | on | DOM, console, network and performance over the DevTools protocol. |
+| `clerk` | on (remote) | Instance config, users, domains. Read-only in practice. |
+| `httpstatus` | off | SSL, CORS, redirect chains, HAR. Off because it wants an API key; a server that 401s every call is worse than one that is visibly off. |
+| `puppeteer`, `playwright` | off | Third and fourth browser drivers. They were already in the global config; three drivers for one job is how you get three answers. |
+
+Refused, with reasons: **`x64dbgMCP`** debugs Windows native binaries and this is
+Linux; **WebMCP** is a browser API for a *site* to expose its own tools, not a
+server to install.
+
+```
+google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/codegraph-debug
+```
+
+Config lives in `~/.config/opencode/opencode.json`,
+`~/.free-pi/agent/mcp.json` and `~/.hermes/profiles/<profile>/config.yaml`.
+
+### The loop, in order
+
+1. **Measure.** A claim about performance, contrast or behaviour starts with a
+   number from this machine. `scripts/e2e/budget.mjs` prints the value it saw.
+2. **Read the failure.** Satori said which node needed `display: flex`; the
+   built CSS said the mask rule was never emitted. Both took one look at the
+   real output and zero guesses.
+3. **Fix the smallest thing.** `min-w-0` on the grid's direct children, not a
+   layout rewrite.
+4. **Prove it twice** — locally and against the deployment, because they differ.
+   `/api/graph` answers 307 to /sign-in locally and a not-found page with 200 in
+   production. Same protection, different transport. Assert the invariant, not
+   the status code.
+5. **Write it down.** A check in `scripts/e2e/`, a row in this file, or an
+   issue. Something unrecorded is something the next session re-discovers.
+
 ## Debugging tools (MCP)
 
 Not all wired at once. One browser driver is live; the rest sit in config,

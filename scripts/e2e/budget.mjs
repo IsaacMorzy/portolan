@@ -67,6 +67,104 @@ const card = await page.request.get(`${BASE}/opengraph-image`, { maxRedirects: 0
 check("the social card renders", card.status() === 200, `${card.status()}`);
 check("and is a PNG", (card.headers()["content-type"] ?? "").includes("image/png"), card.headers()["content-type"] ?? "none");
 
+// Contrast, computed from what the browser actually painted rather than from
+// the token file. Dark mode read as dim twice in a row and both times it was a
+// pair nobody had added up: #8d8d96 on #131315 is 5.6:1 — technically passing,
+// perceptibly muddy at 12px. The rule here is the WCAG one, so a failure is
+// arguable; the point is that it is now measured on every run instead of being
+// noticed on a screenshot three weeks later.
+const contrast = await page.evaluate(() => {
+  const parse = (c) => {
+    const m = c.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(",").map(Number);
+    return { r: p[0], g: p[1], b: p[2], a: p[3] ?? 1 };
+  };
+  const lum = ({ r, g, b }) => {
+    const f = (v) => {
+      const s = v / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  };
+  const bgOf = (el) => {
+    let n = el;
+    while (n && n !== document.documentElement) {
+      const c = parse(getComputedStyle(n).backgroundColor);
+      if (c && c.a > 0.5) return c;
+      n = n.parentElement;
+    }
+    return parse(getComputedStyle(document.body).backgroundColor) ?? { r: 255, g: 255, b: 255, a: 1 };
+  };
+  const bad = [];
+  for (const el of document.querySelectorAll("p, span, li, a, h1, h2, h3, div")) {
+    // Only elements that paint their own text.
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 2);
+    if (!own) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility === "hidden" || cs.display === "none" || Number(cs.opacity) < 0.9) continue;
+    const fg = parse(cs.color);
+    if (!fg || fg.a < 0.9) continue;
+    const bg = bgOf(el);
+    const l1 = lum(fg), l2 = lum(bg);
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    const size = Number(cs.fontSize.replace("px", ""));
+    const large = size >= 24 || (size >= 18.66 && Number(cs.fontWeight) >= 700);
+    const need = large ? 3 : 4.5;
+    if (ratio < need) bad.push(`${(el.textContent ?? "").trim().slice(0, 24)} ${ratio.toFixed(2)}:1 < ${need}`);
+  }
+  return { checked: document.querySelectorAll("p, span, li, a, h1, h2, h3").length, bad: bad.slice(0, 3), count: bad.length };
+});
+check("every text pair clears WCAG AA in light", contrast.count === 0, contrast.bad.join(" | ") || "none");
+
+// The same pass in dark, because a token can exist in one mode and be absent in
+// the other, and that is the failure this project actually hit twice.
+await page.context().addCookies([{ name: "theme", value: "dark", url: BASE }]);
+await page.reload({ waitUntil: "load" });
+await page.waitForTimeout(1200);
+const darkContrast = await page.evaluate(() => {
+  const parse = (c) => {
+    const m = c.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const p = m[1].split(",").map(Number);
+    return { r: p[0], g: p[1], b: p[2], a: p[3] ?? 1 };
+  };
+  const lum = ({ r, g, b }) => {
+    const f = (v) => {
+      const s = v / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+  };
+  const bgOf = (el) => {
+    let n = el;
+    while (n && n !== document.documentElement) {
+      const c = parse(getComputedStyle(n).backgroundColor);
+      if (c && c.a > 0.5) return c;
+      n = n.parentElement;
+    }
+    return parse(getComputedStyle(document.body).backgroundColor) ?? { r: 0, g: 0, b: 0, a: 1 };
+  };
+  const bad = [];
+  for (const el of document.querySelectorAll("p, span, li, a, h1, h2, h3, div")) {
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 2);
+    if (!own) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility === "hidden" || cs.display === "none" || Number(cs.opacity) < 0.9) continue;
+    const fg = parse(cs.color);
+    if (!fg || fg.a < 0.9) continue;
+    const bg = bgOf(el);
+    const l1 = lum(fg), l2 = lum(bg);
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    const size = Number(cs.fontSize.replace("px", ""));
+    const large = size >= 24 || (size >= 18.66 && Number(cs.fontWeight) >= 700);
+    const need = large ? 3 : 4.5;
+    if (ratio < need) bad.push(`${(el.textContent ?? "").trim().slice(0, 24)} ${ratio.toFixed(2)}:1 < ${need}`);
+  }
+  return { count: bad.length, bad: bad.slice(0, 3), theme: document.documentElement.dataset.theme ?? "?" };
+});
+check("and in dark, where the failures actually were", darkContrast.count === 0, `${darkContrast.theme}: ${darkContrast.bad.join(" | ") || "none"}`);
+
 // A page that is 200 while everything it needs is 404 is a page that is broken
 // and pretending not to be.
 check("no subresource failed", failed.length === 0, failed.slice(0, 3).join(", ") || "none");
