@@ -138,6 +138,15 @@ body {
   mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, black 40%, transparent 100%);
 }
 
+/* One focus ring for the whole public surface. Components set their own where the
+   shape differs (buttons, cards); a bare link had none at all, which made keyboard
+   navigation invisible on a page whose navigation is links. */
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 /* React Flow's attribution stays (MIT requires it) but must not be clipped by the
    rounded corner it is parked against. Its default 10px link is also below the
    readable floor, so it is set in the muted token at the smallest size §4 allows. */

@@ -80,7 +80,7 @@ const ROWS = [
 
 export function Compare() {
   return (
-    <section id="compare" className="border-t border-line">
+    <section id="compare" className="scroll-mt-16 border-t border-line">
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-end md:gap-16">
           <h2 className="max-w-[22ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">

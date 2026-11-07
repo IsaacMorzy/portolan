@@ -49,8 +49,16 @@ export default async function LandingPage() {
   return (
     <div className="flex min-h-full flex-col bg-canvas">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* First stop for a keyboard. It is invisible until focused, because a
+          visible skip link on a page with a 56px header is a second header. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-surface focus:px-3 focus:py-1.5 focus:text-xs focus:text-fg"
+      >
+        Skip to content
+      </a>
       <Nav theme={theme} signedIn={signedIn} />
-      <main className="flex-1">
+      <main id="main" className="flex-1">
         <Hero />
         <Value />
         <Workflow />

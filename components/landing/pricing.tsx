@@ -38,7 +38,7 @@ const PLANS = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="mx-auto max-w-6xl px-6 py-16 md:py-20">
+    <section id="pricing" className="scroll-mt-16 mx-auto max-w-6xl px-6 py-16 md:py-20">
       <div className="max-w-xl">
         <h2 className="text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.03em] md:text-[2rem]">
           Priced per person, because a map is read by people.

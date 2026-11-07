@@ -28,7 +28,7 @@ const QUESTIONS = [
 
 export function Questions() {
   return (
-    <section id="questions" className="border-t border-line">
+    <section id="questions" className="scroll-mt-16 border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-16 md:py-28">
         <div>
           <h2 className="max-w-[16ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">

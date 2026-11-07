@@ -47,7 +47,7 @@ const STEPS = [
 
 export function Workflow() {
   return (
-    <section id="workflow" className="border-t border-line">
+    <section id="workflow" className="scroll-mt-16 border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 [&>*]:min-w-0 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-16 md:py-28">
         <div>
           <h2 className="max-w-[18ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
@@ -114,7 +114,7 @@ const IMPACT = [
 
 export function MapSection() {
   return (
-    <section id="map" className="border-t border-line bg-surface">
+    <section id="map" className="scroll-mt-16 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-20 md:grid-cols-2 md:gap-16 md:py-28">
         <div className="order-2 md:order-1">
           <table className="w-full border-collapse text-left text-[0.8125rem]">
@@ -182,7 +182,7 @@ export function MapSection() {
  */
 export function Grounding() {
   return (
-    <section id="grounding" className="border-t border-line">
+    <section id="grounding" className="scroll-mt-16 border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:gap-16 md:py-28">
         <div>
           <h2 className="max-w-[22ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
@@ -232,7 +232,7 @@ const TEAM_POINTS = [
 
 export function Teams() {
   return (
-    <section id="teams" className="border-t border-line bg-surface">
+    <section id="teams" className="scroll-mt-16 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-16 md:py-28">
         <h2 className="max-w-[16ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
           One map your whole team can read
