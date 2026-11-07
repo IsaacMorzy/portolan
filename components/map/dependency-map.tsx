@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Background,
   ReactFlow,
   ReactFlowProvider,
   getViewportForBounds,
@@ -130,13 +131,20 @@ function MapCanvas({
           target: e.target,
           targetHandle: e.targetHandle,
           style: {
-            // Thickness says how many imports one line stands for, gently.
-            strokeWidth: Math.min(2.5, 0.75 + Math.log2(e.count) / 3),
+            // Thickness says how many imports one line stands for, gently. The
+            // floor is not zero: a one-import edge still has to be a line you can
+            // follow, and at 0.75px it read as texture rather than as an edge.
+            strokeWidth: Math.max(1.15, Math.min(2.5, 0.75 + Math.log2(e.count) / 3)),
             // React Flow's default edge colour is a hard-coded grey that knows
             // nothing about the theme. An edge with no selection on it is a
             // normal edge, so it gets the token rather than the library's idea
             // of grey — the same reason no component here ships a raw hex.
             stroke: stroke ?? "var(--edge)",
+            // Arrowheads would say direction once per line, but this version's
+            // Edge types markerEnd as a string while the renderer wants an
+            // object, and a cast to force it would be a lie the compiler stops
+            // checking. Weight plus the incoming/outgoing colours carry the same
+            // fact without a type assertion.
             opacity: (lit && !stroke) || outOfFocus ? 0.15 : 1,
           },
         });
@@ -219,7 +227,12 @@ function MapCanvas({
             if (node.type === "folded") onOpen(node.id);
           }}
           onPaneClick={onDeselect}
-        />
+        >
+          {/* Spacing reference, not decoration: it sits on `line`, one step below
+              any edge, so it never competes with the data it is there to help
+              read. Its colour is a token, so it follows the theme like the rest. */}
+          <Background color="var(--line)" gap={22} size={1} />
+        </ReactFlow>
       </MapSelection.Provider>
       </div>
     </MapActions.Provider>
