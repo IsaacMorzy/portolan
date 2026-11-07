@@ -9,6 +9,7 @@
 // export prints to stdout so it pipes into dot, a gist, or a README.
 
 import { readFileSync } from "node:fs";
+import { formatTour, tour, type TourMode } from "../lib/graph/tour.ts";
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
 import { toDot, toMermaid } from "../lib/graph/export.ts";
@@ -18,7 +19,7 @@ import { deserializeParseResult } from "../lib/parser/contract.ts";
 import { parseRepository } from "../lib/parser/index.ts";
 import type { Edge } from "../lib/parser/types.ts";
 
-const VALUE_FLAGS = ["--rules", "--format", "--from", "--depth"];
+const VALUE_FLAGS = ["--rules", "--format", "--from", "--depth", "--mode"];
 
 function flag(argv: string[], name: string): string | undefined {
   const i = argv.indexOf(name);
@@ -47,7 +48,7 @@ function main(argv: string[]): void {
 
   if (!command || !target) {
     console.error(
-      "usage: cartograph cycles <dir> | rules <dir> [--rules f.json] | export <dir> [--format dot|mermaid] [--from f --depth n] | diff <a.json> <b.json>",
+      "usage: cartograph cycles <dir> | rules <dir> [--rules f.json] | export <dir> [--format dot|mermaid] [--from f --depth n] | diff <a.json> <b.json> | tour <dir> <file> [--mode follow|surface] [--depth n]",
     );
     process.exit(2);
   }
@@ -102,6 +103,43 @@ function main(argv: string[]): void {
     for (const e of d.removed) console.log(`- ${e.source} -> ${e.target}`);
     for (const r of d.reversed) console.log(`~ ${r.before.source} -> ${r.before.target} is now ${r.after.source} -> ${r.after.target}`);
     console.log(`\n${d.added.length} added, ${d.removed.length} removed, ${d.reversed.length} reversed`);
+    return;
+  }
+
+  if (command === "tour") {
+    const [, dir, file] = args;
+    if (!dir || !file) {
+      console.error("usage: cartograph tour <dir> <file> [--mode follow|surface] [--depth n]");
+      process.exit(2);
+    }
+    const modeAt = argv.indexOf("--mode");
+    const mode = (modeAt > -1 ? argv[modeAt + 1] : "follow") as TourMode;
+    if (mode !== "follow" && mode !== "surface") {
+      console.error(`--mode must be follow or surface, not "${mode}"`);
+      process.exit(2);
+    }
+    const depthAt = argv.indexOf("--depth");
+    const depth = depthAt > -1 ? Number(argv[depthAt + 1]) : 3;
+    if (!Number.isInteger(depth) || depth < 1 || depth > 6) {
+      console.error("--depth must be a whole number from 1 to 6");
+      process.exit(2);
+    }
+    const all = edgesOf(dir);
+    const known = new Set(all.flatMap((e) => [e.source, e.target]));
+    if (!known.has(file)) {
+      // Not silent: a path that is merely close is the common mistake, and the
+      // tour would otherwise print a confident empty result.
+      const near = [...known].filter((k) => k.includes(file.replace(/^\/+/, ""))).slice(0, 5);
+      console.error(`not in the graph: ${file}`);
+      if (near.length > 0) console.error(`did you mean:\n  ${near.join("\n  ")}`);
+      process.exit(1);
+    }
+    const result = tour(all, file, mode, depth);
+    if (result.steps.length === 0) {
+      console.log(`${file} has nothing ${mode === "follow" ? "below" : "above"} it in this graph.`);
+      return;
+    }
+    console.log(formatTour(result));
     return;
   }
 

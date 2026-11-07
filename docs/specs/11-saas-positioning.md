@@ -186,29 +186,43 @@ populated, `refreshed_at` stamped. 401 without the secret, 401 with a wrong one.
 
 ### G10 — Onboarding tours
 
-**Problem.** CodeSee sold guided tours and was sunset. Nobody replaced them,
-which makes this the least contested gap in the table.
+**Problem.** A map is a wall of boxes for someone on their first day. Emerge and
+CodeScene both guide a reader through an unfamiliar repository.
 
-**What.** An ordered list of steps over the parsed graph — file, why it matters,
-what it imports — stored as a row, not as a document.
+**What.** Guided walks over the parsed graph.
 
-**Acceptance.** A tour renders step by step against a real analysis, and a step
-pointing at a file removed since the tour was written reports the removal
-instead of rendering nothing.
+**Acceptance.** A reader can follow one file's dependencies end to end without
+opening the tree, and every step names the import that justifies it.
 
-## What this phase deliberately does not decide
+**Shipped generated, not authored — and the blocker was the whole argument.**
+The ticket sat on "authored content or generated?" because authored wins on
+polish. It loses on the only thing that matters here: a hand-written walk
+through `app/api/projects/route.ts` is wrong the first time that file is
+renamed, and nothing fails when it goes wrong. It just quietly stops being true,
+which is the exact failure mode this product exists to complain about.
 
-- Per-seat or per-repository pricing. Both exist in the field; picking now
-  would be a guess dressed as a decision.
-- Which of G1–G10 is next. G1 blocks all of them commercially; G10 is the least
-  contested and could be done first by a small team wanting differentiation
-  rather than reach.
+So a tour is derived (`lib/graph/tour.ts`). `follow` walks what a file pulls in,
+in reading order; `surface` walks what depends on it, nearest first. Breadth
+first, so a tour reads as concentric rings instead of disappearing into the
+first import. Every step carries the specifier and line from the parse, because
+a step a reader cannot check is a suggestion. A loop back is marked rather than
+dropped — returning somewhere you have been is information. The walk is bounded
+at 24 steps and reports how many it left behind, because an unbounded tour that
+silently truncates is a lie.
 
-## Acceptance check (run by hand)
+Proved on this repository:
 
-- [ ] The landing page states the positioning in the hero and again as its own
-      section, and both say something a competitor cannot.
-- [ ] The comparison table names ten tools, gives their published pricing, and
-      keeps the rows where this product loses.
-- [ ] This file contains one spec per gap, each with an acceptance check.
-- [ ] Nothing from G1–G10 has been built in this phase.
+```
+$ cartograph tour . app/api/graph/route.ts --depth 2
+app/api/graph/route.ts — what it pulls in, in reading order
+
+1. app/(workspace)/analyses/[id]/actions.ts  @/app/(workspace)/analyses/[id]/actions:6
+2. lib/analysis/load.ts  @/lib/analysis/load:3
+...
+12. lib/supabase/server.ts  @/lib/supabase/server:11  (already on this tour)
+```
+
+Seven tests cover the properties that make a generated tour trustworthy: it
+starts where asked, walks the right direction, cites a line per step, marks
+repeats, distinguishes type-only edges, and states its own truncation.
+

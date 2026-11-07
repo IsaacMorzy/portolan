@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { totalCommits } from "../lib/graph/churn.ts";
 import { rateLimit, resetLimits } from "../lib/ratelimit.ts";
+import { formatTour, MAX_TOUR_STEPS, tour } from "../lib/graph/tour.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -176,4 +177,71 @@ test("the window slides rather than resets on a clock boundary", () => {
       resolve();
     }, 60);
   });
+});
+
+// --- G10 (#24) tours: derived, not authored --------------------------------
+//
+// The whole reason a tour is computed instead of written is that a hand-written
+// walk goes stale silently. These tests pin the two properties that make the
+// generated one trustworthy: it starts where you asked, and every step carries
+// the line that justifies it.
+
+const TOUR_EDGES = [
+  { source: "app/route.ts", target: "lib/handler.ts", kind: "import" as const, typeOnly: false, specifier: "@/lib/handler", line: 3 },
+  { source: "lib/handler.ts", target: "lib/db.ts", kind: "import" as const, typeOnly: false, specifier: "./db", line: 1 },
+  { source: "lib/db.ts", target: "app/route.ts", kind: "import" as const, typeOnly: true, specifier: "../app/route", line: 9 },
+];
+
+test("a follow tour starts at the file asked about and walks downward", () => {
+  const t = tour(TOUR_EDGES, "app/route.ts", "follow");
+  assert.equal(t.start, "app/route.ts");
+  assert.deepEqual(t.steps.map((s) => s.path), ["lib/handler.ts", "lib/db.ts", "app/route.ts"]);
+  assert.deepEqual(t.steps.map((s) => s.depth), [1, 2, 3]);
+});
+
+test("a surface tour walks upward, so a blast radius is nearest-first", () => {
+  const t = tour(TOUR_EDGES, "lib/db.ts", "surface");
+  assert.equal(t.steps[0].path, "lib/handler.ts", "the thing that imports it comes first");
+});
+
+test("every step names the line that put it on the tour", () => {
+  const t = tour(TOUR_EDGES, "app/route.ts", "follow");
+  for (const step of t.steps) {
+    assert.ok(step.via, `${step.path} has no justification`);
+    assert.ok(step.via.line > 0, `${step.path} cites no line`);
+    assert.ok(step.via.specifier.length > 0, `${step.path} cites no specifier`);
+  }
+});
+
+test("a loop back is marked rather than dropped", () => {
+  const t = tour(TOUR_EDGES, "app/route.ts", "follow");
+  const back = t.steps.find((s) => s.path === "app/route.ts");
+  assert.ok(back, "returning to the start is information, not noise");
+  assert.equal(back.repeat, true);
+});
+
+test("a type-only edge is reported as one, because changing a type still breaks callers", () => {
+  const t = tour(TOUR_EDGES, "lib/db.ts", "follow");
+  const edge = t.steps.find((s) => s.path === "app/route.ts");
+  assert.equal(edge?.via?.typeOnly, true);
+});
+
+test("a deep tour is bounded, and says how much it left behind", () => {
+  const wide = Array.from({ length: 40 }, (_, i) => ({
+    source: "root.ts",
+    target: `f${i}.ts`,
+    kind: "import" as const,
+    typeOnly: false,
+    specifier: `./f${i}`,
+    line: i + 1,
+  }));
+  const t = tour(wide, "root.ts", "follow");
+  assert.equal(t.steps.length, MAX_TOUR_STEPS);
+  assert.ok(t.beyond > 0, "an unbounded tour that silently truncates is a lie");
+});
+
+test("the rendered tour is readable and numbered", () => {
+  const text = formatTour(tour(TOUR_EDGES, "app/route.ts", "follow"));
+  assert.match(text, /^app\/route\.ts — what it pulls in/);
+  assert.match(text, /\n1\. lib\/handler\.ts\s+@\/lib\/handler:3/);
 });
