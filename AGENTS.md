@@ -197,6 +197,13 @@ curl "http://127.0.0.1:<port>/callback?code=...&state=..."
 The tool map, and which tools are legitimately useful here versus which would
 replace a deliberate system with a generic one: `docs/design-system.md` §11.
 
+**Where UI comes from.** Velora is one registry and most of it is refused by house
+style. The shortlist of what is admissible, why three popular kits are not, and the
+re-tokenizing procedure every pulled file goes through: `docs/specs/13-ui-sources.md`.
+The short version: the visual layer is already hand-built, the *behavioural* layer is
+empty, so the only thing worth adding is one headless primitive dependency at the
+moment a component needs it — not a kit adopted up front.
+
 The CLI is a design-system *generator* — it emits a `SKILL.md` for a stack from a
 prompt or a preset:
 
