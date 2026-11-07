@@ -1,5 +1,13 @@
 # Phase 7 — The pipeline
 
+> **Superseded in part.** The per-analysis realtime channel described below was
+> dropped in `supabase/migrations/20261001090000_drop_progress_channel.sql`:
+> Supabase's asymmetric signing key cannot mint a token PostgREST accepts, so no
+> browser could hold a usable subscription and the broadcast trigger was firing
+> on every analyses write for nobody. Progress is now polled from
+> `app/api/progress/[id]/route.ts`, scoped to the caller's organization. The rest
+> of this phase — stages, failure states, commit pinning — still holds.
+
 **Goal.** Paste a URL and watch your own repository become a map.
 
 ## Build

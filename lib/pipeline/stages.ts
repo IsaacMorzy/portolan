@@ -6,8 +6,8 @@ import type { Enums } from "../supabase/database.types.ts";
 export type Status = Enums<"analysis_status">;
 export type Stage = Enums<"analysis_stage">;
 
-// What the database publishes on "analysis:<id>" when a run moves. On failure
-// the message is the reason.
+// What /api/progress/[id] answers with while a run moves. On failure the
+// message is the reason.
 export type Progress = { status: Status; stage: Stage | null; message: string | null };
 
 export const STAGES: readonly { stage: Stage; label: string }[] = [
@@ -21,10 +21,6 @@ export const STAGES: readonly { stage: Stage; label: string }[] = [
 // a row that says "running" forever. Past this it's shown as stale, and can
 // be started again. Parsing a large repository takes well under this.
 export const STALE_AFTER_MS = 5 * 60 * 1000;
-
-export function progressTopic(analysisId: string): string {
-  return `analysis:${analysisId}`;
-}
 
 // A queued row is measured from when it was created (its run never claimed
 // it); a running one from when its run began.
