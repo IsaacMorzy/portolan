@@ -53,7 +53,7 @@ export function layout(objects: readonly MapObject[], edges: readonly MapEdge[])
   // into columns that edge bundles then crossed; 28 is one step of breathing room,
   // paid for in canvas width, which is checked against a screenshot rather than
   // assumed to be better.
-  g.setGraph({ rankdir: "LR", nodesep: 28, ranksep: 56 });
+  g.setGraph({ rankdir: "LR", nodesep: 36, ranksep: 56 });
   g.setDefaultEdgeLabel(() => ({}));
   for (const o of objects) g.setNode(o.id, sizeOf(o));
   // Several row-level lines between the same two objects are one constraint

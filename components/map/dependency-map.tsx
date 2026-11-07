@@ -127,6 +127,11 @@ function MapCanvas({
           !(focus.endpoints.has(endpointKey(e.source, e.sourceHandle)) && focus.endpoints.has(endpointKey(e.target, e.targetHandle)));
         (stroke ? bright : dim).push({
           id: e.id,
+          // Orthogonal routing rather than bezier: a dependency has one way to go,
+          // right to left-to-right ranks, and a curve that could be going anywhere
+          // is a drawing of uncertainty. Crossings become corners, which the eye
+          // can trace.
+          type: "smoothstep",
           source: e.source,
           sourceHandle: e.sourceHandle,
           target: e.target,
