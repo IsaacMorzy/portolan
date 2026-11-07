@@ -9,6 +9,10 @@ import type { MapEdge, MapObject } from "@/lib/graph/view";
 // no longer fit it — the kind of drift a comment cannot prevent and a screenshot
 // can only hint at.
 export const CHAR_WIDTH = 7.2;
+// Panel headers are drawn semibold, and a bold advance is wider than a regular
+// one at the same size. Measuring both with CHAR_WIDTH is what left "(workspace)"
+// ellipsized inside a box that was provably wide enough for 11 regular characters.
+export const CHAR_WIDTH_BOLD = 7.9;
 export const PAD_X = 10;
 export const FOLDED_MIN_HEIGHT = 40;
 export const FOLDED_MIN_WIDTH = 120;
@@ -35,7 +39,8 @@ export function sizeOf(o: MapObject): { width: number; height: number } {
       height: Math.round(Math.min(FOLDED_MAX_HEIGHT, FOLDED_MIN_HEIGHT + FAN_IN_SCALE * Math.sqrt(o.fanIn))),
     };
   }
-  const widest = Math.max(labelWidth, o.rowChars * CHAR_WIDTH + 2 * PAD_X + ROW_NUMBERS_WIDTH);
+  const headerWidth = o.label.length * CHAR_WIDTH_BOLD + 2 * PAD_X;
+  const widest = Math.max(labelWidth, headerWidth, o.rowChars * CHAR_WIDTH + 2 * PAD_X + ROW_NUMBERS_WIDTH);
   // A scrolling panel always keeps its above and below rows, so its height is
   // the same at every offset and scrolling never moves the layout.
   const rowCount = o.rows.length + (o.scrolls ? 2 : 0);
