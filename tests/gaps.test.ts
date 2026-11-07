@@ -10,6 +10,7 @@ import { rateLimit, resetLimits } from "../lib/ratelimit.ts";
 import { formatTour, MAX_TOUR_STEPS, tour } from "../lib/graph/tour.ts";
 import { pythonImports, resolvePython } from "../lib/parser/python.ts";
 import { appJwt, appManifest, installUrl } from "../lib/github/app.ts";
+import { mayRead } from "../lib/github/credential.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -328,4 +329,12 @@ test("the App JWT verifies against its own public key", () => {
 
 test("the install URL carries the workspace, encoded", () => {
   assert.equal(installUrl("cartograph", "org_1/2"), "https://github.com/apps/cartograph/installations/new?state=org_1%2F2");
+});
+
+test("mayRead compares full names, not prefixes or owners", () => {
+  const credential = { token: "t", expiresAt: "", repositories: ["IsaacMorzy/codegraph", "vercel/next.js"] };
+  assert.equal(mayRead(credential, "IsaacMorzy", "codegraph"), true);
+  assert.equal(mayRead(credential, "isaacmorzy", "CodeGraph"), true, "GitHub names are case-insensitive");
+  assert.equal(mayRead(credential, "IsaacMorzy", "codegraph-private"), false, "a prefix is not a member");
+  assert.equal(mayRead(credential, "vercel", "codegraph"), false, "the owner alone is not a member");
 });
