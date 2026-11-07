@@ -77,3 +77,29 @@ is deterministic:
 
 When blocked, the scripts exit `3` with `BLOCKED` rather than reporting a page
 defect — a challenge page is not evidence about the app.
+
+## Why automated sign-in stops at Clerk, not Vercel
+
+With the bypass secret in place the checkpoint stops appearing, and the next wall
+is Clerk's own client-side protection: `cdn.protect.clerk.com/ins_*/c/1-*` is
+aborted in headless Chrome, so a `__clerk_ticket` is never accepted and the run
+lands on `/sign-in`.
+
+The obvious workaround does not exist. Minting a session directly is refused:
+
+    POST https://api.clerk.com/v1/sessions
+    { "code": "request_invalid_for_environment",
+      "long_message": "Request only valid for development instances." }
+
+So there is no supported way to obtain a `__session` cookie for a **production**
+Clerk instance from a script. The routes that remain, in order of honesty:
+
+1. Extend `app/dev/*` with the screen in question and assert layout there. It
+   renders the real components with fixture data, so it catches misalignment,
+   overflow and off-scale type — everything except the session-dependent chrome.
+2. Sign in by hand once and export cookies for the run. Works today, expires.
+3. Ask Clerk to allow the automation origin, if headless sign-in is worth their
+   support time.
+
+Recorded here because this was tried three times in three different ways, and the
+last attempt was reading Clerk's own API response rather than guessing at it.
