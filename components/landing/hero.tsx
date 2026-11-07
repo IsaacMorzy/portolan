@@ -63,7 +63,10 @@ function center(n: Node) {
 
 export function Hero() {
   return (
-    <section className="mx-auto max-w-6xl px-6 pt-16 pb-14 md:pt-24">
+    // overflow-x-clip is on this section, not on html: the ticker below is full-bleed
+    // (100vw includes the scrollbar, so it runs ~7px past the page), and clipping at
+    // the root would take the sticky header with it.
+    <section className="mx-auto max-w-6xl overflow-x-clip px-6 pt-16 pb-14 md:pt-24">
       <div className="max-w-2xl">
         <h1 className="text-[2.5rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance md:text-[3.5rem]">
           See what your code depends on.
