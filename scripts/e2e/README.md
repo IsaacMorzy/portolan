@@ -6,6 +6,7 @@ non-zero on failure, so any of them can be put in CI as-is.
 | Script | Task |
 | --- | --- |
 | `landing.mjs` | Every public page renders at 1440 and 390, with no sideways scroll and no page error |
+| `budget.mjs` | CLS, DOM size, heading structure, canonical, social card, JSON-LD — fails with the measured number |
 | `api-graph.mjs` | `/api/graph` is not open to an anonymous caller |
 | `api-churn.mjs` | `/api/churn` is not open to an anonymous caller either |
 | `sign-in.mjs` | A Clerk ticket signs in and lands in the workspace (deployed host only) |
@@ -13,7 +14,7 @@ non-zero on failure, so any of them can be put in CI as-is.
 | `harness.mjs` | Shared launch, open, check and report helpers — not run directly |
 
 ```
-pnpm e2e                                    # landing + both API guards
+pnpm e2e                                    # landing + budget + both API guards
 pnpm e2e:sign-in                            # needs .env.local and the deployed host
 pnpm e2e:shots http://localhost:3100 /      # screenshots
 ```
