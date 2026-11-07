@@ -97,7 +97,14 @@ function MapCanvas({
   const lit = useMemo(() => highlightFor(view, edges, selection), [view, edges, selection]);
   const hovered = useMemo(() => hoverEndpoint(view, hover), [view, hover]);
   const railKeys = useMemo(
-    () => new Map(files.map((f) => [f.path, f.role ?? modelRoles.get(f.path) ?? UNCLASSIFIED])),
+    () =>
+      new Map(
+        files.map((f) => {
+          const keys = [f.role ?? modelRoles.get(f.path) ?? UNCLASSIFIED];
+          if (f.pkg) keys.push(`pkg:${f.pkg}`);
+          return [f.path, keys] as const;
+        }),
+      ),
     [files, modelRoles],
   );
   const focus = useMemo(() => categoryFocus(view, category, railKeys), [view, category, railKeys]);

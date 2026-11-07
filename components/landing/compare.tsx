@@ -35,6 +35,10 @@ const SHARED = [
     how: "No card and no trial for a public repo — the same terms Madge, GitDiagram and Emerge offer, because a map of public code is not the scarce thing.",
   },
   {
+    what: "Package boundaries in a monorepo",
+    how: "The workspace manifests decide which package owns each file — pnpm-workspace.yaml, or a package.json workspaces array — so the rail can group by package and an edge that leaves one is named for the crossing.",
+  },
+  {
     what: "An output you can send to somebody",
     how: "A page with a URL you can paste in a review thread, the way these tools export a diagram or a CLI prints a graph.",
   },

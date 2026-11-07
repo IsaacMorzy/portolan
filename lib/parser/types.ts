@@ -3,7 +3,7 @@
 
 import type { Role } from "../roles.ts";
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export type EdgeKind = "import" | "re-export" | "dynamic-import" | "require";
 
@@ -36,6 +36,12 @@ export type ParsedFile = {
    * lives in the other file, and that file is a re-export edge away.
    */
   exports: string[];
+  /**
+   * The workspace package that owns this file, from the repository's own manifests:
+   * "web", "@acme/ui". Null outside every package, and null for a repository with
+   * no workspace globs at all — which is most of them.
+   */
+  pkg: string | null;
 };
 
 /** The repository root, and every folder below it whose package.json a framework adapter detected. */

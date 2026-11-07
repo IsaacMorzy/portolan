@@ -88,14 +88,18 @@ export type CategoryFocus = {
 export function categoryFocus(
   view: MapView,
   category: string | null,
-  /** Each file's rail category. */
-  categoryOf: ReadonlyMap<string, string>,
+  /**
+   * Every key a file answers to — its role, and its package when the repository
+   * declares one. A list rather than a single value because the same file is "a
+   * page" and "inside web", and the rail lets a reader pick either.
+   */
+  keysOf: ReadonlyMap<string, readonly string[]>,
 ): CategoryFocus | null {
   if (category === null) return null;
   const endpoints = new Set<string>();
   const counts = new Map<string, number>();
   for (const [path, at] of view.endpointOf) {
-    if (categoryOf.get(path) !== category) continue;
+    if (!keysOf.get(path)?.includes(category)) continue;
     endpoints.add(endpointKey(at.object, at.handle));
     counts.set(at.object, (counts.get(at.object) ?? 0) + 1);
   }

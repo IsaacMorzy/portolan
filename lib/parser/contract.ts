@@ -98,6 +98,7 @@ function parsedFile(value: unknown, at: string): ParsedFile {
     reachedBy: o.reachedBy === null ? null : string(o.reachedBy, `${at}.reachedBy`),
     role: o.role === null ? null : oneOf(o.role, `${at}.role`, ROLE_IDS),
     exports: array(o.exports, `${at}.exports`, string),
+    pkg: o.pkg === null || o.pkg === undefined ? null : string(o.pkg, `${at}.pkg`),
   };
 }
 

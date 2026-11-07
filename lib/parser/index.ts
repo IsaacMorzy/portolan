@@ -20,6 +20,7 @@ import type { Role } from "../roles.ts";
 import { placementRole } from "./adapters/conventions.ts";
 import type { AdapterFile } from "./adapters/types.ts";
 import { walkRepository, withinProject, type WalkResult } from "./walk.ts";
+import { readWorkspace } from "../workspace/packages.ts";
 
 export type Selection = { root: string; walk: WalkResult };
 
@@ -183,6 +184,11 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
   const paths = units.map((unit) => unit.candidate.path);
   const fan = fanCounts(paths, edges);
   const conventions = applyAdapters(walk, parsed, skipped);
+
+  // Read once per parse: a workspace manifest does not change while one
+  // repository is being read, and calling it per file would re-read the same
+  // two files a thousand times.
+  const workspace = readWorkspace(root);
   const files: ParsedFile[] = units
     .map(({ candidate }) => ({
       path: candidate.path,
@@ -195,6 +201,7 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
       reachedBy: candidate.reachedBy,
       role: conventions.roles.get(candidate.path) ?? null,
       exports: exportsOf.get(candidate.path) ?? [],
+      pkg: workspace.packageOf(candidate.path),
     }))
     .sort((a, b) => a.path.localeCompare(b.path));
 
