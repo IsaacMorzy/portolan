@@ -163,6 +163,30 @@ const darkContrast = await page.evaluate(() => {
   }
   return { count: bad.length, bad: bad.slice(0, 3), theme: document.documentElement.dataset.theme ?? "?" };
 });
+// Section padding (docs/design-system.md §5). Checking padding rather than the
+// resulting gap is deliberate: the gap depends on how much text a band happens
+// to hold, so a gap test fails on content and says nothing about the system.
+// Padding is the thing someone actually typed, and it has two legal values.
+// 128 is the closing band only: the last section gets more air than a mid-page
+// one because nothing follows it to carry the eye onward.
+const SECTION_PAD = ["80px", "112px", "128px"];
+const pads = await page.evaluate(() =>
+  [...document.querySelectorAll("main section, section")]
+    .map((el) => {
+      const cs = getComputedStyle(el);
+      const inner = el.firstElementChild ?? el;
+      const ics = getComputedStyle(inner);
+      return { pt: ics.paddingTop, pb: ics.paddingBottom, own: cs.paddingTop };
+    })
+    .filter((x) => x.pt !== "0px" || x.pb !== "0px"),
+);
+const offPad = pads.filter((x) => !SECTION_PAD.includes(x.pt) || x.pt !== x.pb);
+check(
+  "every landing section is padded symmetrically from the scale",
+  offPad.length === 0,
+  offPad.map((x) => `${x.pt}/${x.pb}`).join(", ") || `${pads.length} sections`,
+);
+
 // The type scale (docs/design-system.md §4). Twelve sizes exist; a thirteenth is
 // a design decision, not a `text-[19px]` typed at 1am. This has to be read from
 // the browser rather than grepped from source, because Tailwind resolves rem

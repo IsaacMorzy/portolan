@@ -149,11 +149,23 @@ question is genuinely undecided and `docs/design-system.md` is silent. When the
 two disagree the repo wins — and that disagreement is a bug in one of them, so
 say which rather than quietly picking.
 
-The MCP (`https://mcp.typeui.sh`) is configured **disabled** in all three clients
-— opencode, pi, hermes — because it is hosted and needs an API key or sign-in
-that only you can provide. Flip `enabled` in your client config if you want it.
-The vendored skill covers the same ground without a network call, which is why it
-is the default path here.
+The MCP (`https://mcp.typeui.sh`) is **authenticated in hermes** — 24 tools,
+OAuth, no API key. It must authenticate per client, and pi cannot (no OAuth
+command in `free-pi-cli`), which is why the vendored skill stays the default path
+here: it works in all three, offline, with no session to expire.
+
+Re-authenticate with `hermes mcp login typeui`, or `opencode mcp auth typeui`.
+The listener binds `127.0.0.1:<port>` and the consent page sits behind a Vercel
+checkpoint that **rejects headless Chrome** (`Failed to verify your browser —
+Code 29`), so the authorize step needs a real browser. If the redirect lands
+somewhere unreachable, POST it yourself instead of copy-pasting:
+
+```bash
+curl "http://127.0.0.1:<port>/callback?code=...&state=..."
+```
+
+The tool map, and which tools are legitimately useful here versus which would
+replace a deliberate system with a generic one: `docs/design-system.md` §11.
 
 The CLI is a design-system *generator* — it emits a `SKILL.md` for a stack from a
 prompt or a preset:
@@ -222,7 +234,9 @@ One browser driver is live; the rest sit disabled until the task needs them.
 | `chrome-devtools` | on | DOM, console, network and performance over the DevTools protocol. |
 | `clerk` | on (remote) | Instance config, users, domains. Read-only in practice. |
 | `httpstatus` | off | SSL, CORS, redirect chains, HAR. Off because it wants an API key; a server that 401s every call is worse than one that is visibly off. |
-| `typeui` | off | Hosted design-system MCP at `https://mcp.typeui.sh`. Configured in all three clients, disabled because it needs a key or sign-in only the account owner can supply. The vendored skill covers the same ground offline. |
+| `typeui` | on in hermes | Hosted design-system MCP at `https://mcp.typeui.sh`, OAuth (no API key). **24 tools** once authenticated: account, design-system install, section-prompt generation, and site insights. Use it to start a *different* product or to shape a surface that does not exist yet — never to regenerate this one, because `docs/design-system.md` is the source of truth and generation would trade specificity for plausibility. Full tool map and the split-by-question table: `docs/design-system.md` §11. |
+| `typeui` (opencode) | awaiting authorize | `opencode mcp auth typeui` starts its own PKCE flow. |
+| `typeui` (pi) | can't complete | `free-pi-cli` has no OAuth command, so the flow has nowhere to finish. The vendored `typeui-fundamentals` skill is the path there. |
 | `puppeteer`, `playwright` | off | Third and fourth browser drivers. They were already in the global config; three drivers for one job is how you get three answers. |
 
 Refused, with reasons: **`x64dbgMCP`** debugs Windows native binaries and this is

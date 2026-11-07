@@ -28,7 +28,11 @@ export const metadata: Metadata = {
   // and social cards resolve against localhost.
   metadataBase: new URL("https://codegraph-navy.vercel.app"),
   title: "Cartograph",
-  description: "Dependency maps of public GitHub repositories",
+  // 45 characters was a label, not a description: it said what the category is
+  // without saying what the reader gets. scripts/e2e/audit.mjs fails a page
+  // whose description is under 60, which is the length a search result shows.
+  description:
+    "Map a public GitHub repository into its dependency graph, follow an import chain to its end, and see which files break before you change one.",
   // Relative, so metadataBase resolves it. opengraph-image.tsx fills this in
   // automatically, but naming it here keeps the card from silently vanishing
   // if that file is ever renamed.

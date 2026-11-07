@@ -32,7 +32,7 @@ differ in rhythm.
 | | **Marketing** (`/`, `/security`) | **Product** (`/dashboard`, `/analyses/:id`) |
 |---|---|---|
 | Line length | 60–70ch prose | files and edges, no prose column |
-| Section padding | 96–128px | 16–24px |
+| Section padding | 80px mobile / 112px desktop | 16–24px |
 | Type scale use | display 56/80, lead 17 | 11–15 only, never above 32 |
 | Chrome | one nav, one footer | header strip, no footer |
 | Contrast | `fg` for headlines, `fg-muted` for support | `fg` for everything the reader acts on |
@@ -140,8 +140,14 @@ A 4pt grid, and only these values: **4, 8, 12, 16, 20, 24, 32, 48, 64, 96, 128.*
 - Inner group (icon → label): **8**
 - Component padding: **12–16**
 - Between related blocks: **24**
-- Between sections, product: **32–48**
-- Between sections, marketing: **96–128**
+- Between sections, product: **32–48** (`py-8` to `py-12`)
+- Section padding, marketing: **80px / 112px** (`py-20 md:py-28`), and **128px** (`py-32`) for the closing band, which gets more air because nothing follows it to carry the eye onward
+
+**Padding is what you set; the gap is what results.** A section with `py-28` top
+and bottom puts **224px** of air between the last text of one band and the first
+text of the next. An earlier draft of this file said "96–128px between sections",
+which was measuring the padding and calling it the gap — the kind of error that
+makes a reader trust the wrong number and then fight the CSS.
 
 Spacing carries hierarchy. Two blocks 16px apart are one thing; the same two 48px
 apart are two things. A section that needs a border to separate it from the
@@ -199,6 +205,7 @@ Not by review, because review only sees what gets reviewed.
 | `scripts/e2e/budget.mjs` — type scale membership | a thirteenth size sneaking in |
 | `scripts/e2e/budget.mjs` — CLS < 0.02, one `h1`, no sideways scroll | layout regressions |
 | `scripts/e2e/landing.mjs` — 390px horizontal overflow | mobile-only collapse |
+| `scripts/e2e/audit.mjs` — status, one `h1`, named controls, description length | soft 404s and unlabelled controls |
 | `scripts/e2e/screenshots.mjs` + a vision pass | "passes the numbers, looks wrong" |
 
 When a defect escapes, **add a check**. A note in this file is not enforcement —
@@ -214,3 +221,51 @@ Adding a surface:
 3. Use a size from section 4 and a value from section 5. Neither list is a
    suggestion.
 4. Run `pnpm e2e`. It will tell you if either theme disagrees.
+
+---
+
+## 11. The TypeUI tools
+
+`https://mcp.typeui.sh` is authenticated (hermes, 24 tools). The vendored skill is
+the offline path; the MCP is the live one. They answer different questions, and
+using the wrong one is how a hand-built system gets replaced by a generic one.
+
+| Group | Tools | Use it here for |
+|---|---|---|
+| **Account** | `get_current_user`, `check_access`, `get_usage` | Checking the session or a quota before a long generation run. Nothing else. |
+| **Design systems** | `list_design_systems`, `install_design_system`, `install_fundamentals`, `list_workspace_design_systems`, `install_workspace_design_system`, `list_workspace_design_system_versions` | Starting a **different** product. `install_fundamentals` is how `.agents/skills/typeui-fundamentals/` was produced. |
+| **UI generation** | `start_ui_generation`, `get_next_section`, `get_section_prompt`, `list_prompt_sections`, `report_section_cleanup`, `finalize_ui_generation`, `get_started`, `setup_workflow` | `get_section_prompt` when a *new* surface needs a starting shape. Never to regenerate what exists. |
+| **Insights** | `insights_list_websites`, `insights_get_overview`, `insights_get_timeseries`, `insights_get_breakdown`, `insights_compare_websites`, `insights_get_revenue`, `insights_get_search_performance` | Traffic and search data for a verified site. Requires a site linked to the TypeUI account; irrelevant until there is one. |
+
+### The rule
+
+**`docs/design-system.md` wins. Always.**
+
+TypeUI's generation tools produce a coherent system from a prompt — for a project
+that has not decided what it is. This one has decided: semantic tokens only, two
+densities, twelve sizes, no gradients, no shadows, and nine measured checks that
+fail the build. `start_ui_generation` would hand back something defensible and
+generic, and every check would still pass while the product got less specific.
+
+So the split is by question:
+
+| Question | Tool |
+|---|---|
+| "What size belongs here?" | This document §4 |
+| "How much space between these?" | This document §5 |
+| "Is this hierarchy right?" | `typeui-fundamentals` skill (offline, free) |
+| "Give me a shape for a pricing page I have not designed" | `get_section_prompt` |
+| "What does the registry have for a docs site?" | `list_design_systems` |
+| "Is the app fast for real visitors?" | `insights_*`, once a site is linked |
+
+Two things the tools cannot do: they cannot see the twelve-size scale or the
+contrast floor, so a generated section will need auditing, and `budget.mjs` is
+the audit. Run it before believing any generated UI.
+
+### Client status
+
+| Client | State |
+|---|---|
+| hermes | **on** — authenticated, 24 tools |
+| opencode | configured, awaiting its own authorize |
+| pi | disabled — `free-pi-cli` exposes no OAuth command, so the flow cannot complete. The vendored skill is the path there. |

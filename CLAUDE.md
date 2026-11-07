@@ -127,6 +127,32 @@ Breaking one of these is worse than not finishing.
 - **Don't read from the database on a loop.** Name your columns, limit list
   reads, subscribe instead of polling.
 
+## Design
+
+`docs/design-system.md` is the source of truth for every visual decision. Read it
+before changing a surface. The parts that get violated most:
+
+- **Two densities, one token base.** Marketing pages run 80/112px section padding
+  and headlines to 80px. Product pages run 16–24px and never exceed 32px.
+- **Twelve type sizes, no thirteenth.** 11 12 13 14 15 17 20 26 32 40 56 80.
+  `scripts/e2e/budget.mjs` reads them from the browser and fails on anything else.
+- **Semantic tokens only** — `canvas surface raised line fg fg-muted accent
+  accent-fg incoming outgoing kind-1..4 edge`. A raw hex breaks in one theme and
+  nobody notices.
+- No gradients, shadows, glass, emoji, eyebrows, or `01/02/03` markers.
+
+When a defect escapes, add a check before adding a line to the doc. Prose is not
+enforcement — `scripts/e2e/` is.
+
+## Agent skills
+
+TypeUI is available two ways: a vendored offline skill
+(`.agents/skills/typeui-fundamentals/`, MIT) and a hosted MCP
+(`https://mcp.typeui.sh`, OAuth, authenticated in hermes with 24 tools). Use them
+for a surface that does not exist yet. Use `docs/design-system.md` for this one —
+generation trades specificity for plausibility, and every check would still pass
+while the product got less specific. Tool map: `docs/design-system.md` §11.
+
 ## Agent skills
 
 ### Issue tracker

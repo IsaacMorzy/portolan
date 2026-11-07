@@ -13,9 +13,10 @@
     "analyze": "node --env-file=.env.local scripts/analyze.ts",
     "test": "node --test \"tests/*.test.ts\"",
     "cartograph": "node scripts/cartograph.ts",
-    "e2e": "node scripts/e2e/landing.mjs && node scripts/e2e/budget.mjs && node scripts/e2e/api-graph.mjs && node scripts/e2e/api-churn.mjs",
+    "e2e": "node scripts/e2e/landing.mjs && node scripts/e2e/audit.mjs && node scripts/e2e/budget.mjs && node scripts/e2e/api-graph.mjs && node scripts/e2e/api-churn.mjs",
     "e2e:sign-in": "node --env-file=.env.local scripts/e2e/sign-in.mjs",
-    "e2e:shots": "node scripts/e2e/screenshots.mjs"
+    "e2e:shots": "node scripts/e2e/screenshots.mjs",
+    "e2e:measure": "node scripts/e2e/measure.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.7",

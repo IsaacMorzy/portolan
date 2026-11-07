@@ -23,3 +23,21 @@ pnpm e2e:shots http://localhost:3100 /      # screenshots
 resolves it from `PW_ROOT` (default `/tmp/pw/node_modules`) and says so plainly
 when it is missing. A browser driver does not belong in a production
 dependency tree to take screenshots.
+
+## The rest
+
+| Script | Question it answers |
+|---|---|
+| `audit.mjs` | Does every page answer honestly — real 404s, one `h1`, named controls, no sideways scroll, a description a search result could show? |
+| `measure.mjs` | What type sizes does this page actually render, and how much air does each section carry? Prints numbers; decides nothing. |
+| `oauth.mjs` | Can this browser complete an MCP OAuth consent page? Says BLOCKED when a bot check refuses it. |
+
+`audit.mjs` and `measure.mjs` both read from the browser on purpose: Tailwind
+resolves `rem` against a page font-size the source never mentions, and section
+padding is set on inner wrappers, so a grep reports `0px` for every section.
+
+```
+pnpm e2e            # landing + audit + budget + both API guards
+pnpm e2e:measure    # the numbers behind the budget
+node scripts/e2e/measure.mjs localhost /,/security
+```
