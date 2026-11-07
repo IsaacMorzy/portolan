@@ -23,12 +23,18 @@ import type { Theme } from "@/lib/theme";
  * holding the one action a first-time reader needs, not a decorative thumbnail.
  */
 
+// Labels are the headings the reader lands on, shortened: "Comparison" for "Ten
+// tools that draw something close", "Evidence" for "The explanation can only cite
+// what the parser saw". A menu word that the destination does not repeat is a
+// wrong turn. "Questions" was missing from this list entirely until now, which is
+// why the FAQ had no route in.
 const SECTIONS = [
   { href: "#workflow", label: "How it works", hint: "URL to map, stage by stage", group: "product" },
   { href: "#map", label: "The map", hint: "Blast radius for one file", group: "product" },
   { href: "#pricing", label: "Pricing", hint: "Three plans, and what is shipped", group: "product" },
-  { href: "#compare", label: "Compared", hint: "Ten tools, four honest losses", group: "product" },
-  { href: "#grounding", label: "Why it's true", hint: "What every claim cites", group: "trust" },
+  { href: "#compare", label: "Comparison", hint: "Ten tools, four honest losses", group: "product" },
+  { href: "#questions", label: "Questions", hint: "What people ask before pasting", group: "product" },
+  { href: "#grounding", label: "Evidence", hint: "What every claim cites", group: "trust" },
   { href: "#teams", label: "Teams", hint: "One workspace, one boundary", group: "trust" },
   { href: "/security", label: "Security", hint: "What is read, who reads it back", group: "trust" },
 ];
@@ -39,7 +45,11 @@ const GROUPS = [
 ] as const;
 
 // The three that earn a place in the bar itself.
-const INLINE = SECTIONS.filter((s) => ["#map", "#pricing"].includes(s.href));
+const INLINE = SECTIONS.filter((s) => ["#workflow", "#map", "#pricing"].includes(s.href));
+
+// What is left for the panel: the bar already shows INLINE, and a menu that
+// repeats it makes the reader check whether they are the same link.
+const PANEL = SECTIONS.filter((s) => !INLINE.includes(s));
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
@@ -138,7 +148,7 @@ export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
               menu ? "bg-raised text-fg" : "text-fg-muted hover:bg-raised hover:text-fg"
             }`}
           >
-            Everything
+            More
             <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true" className={`transition-transform duration-150 ${menu ? "rotate-180" : ""}`}>
               <path d="M2 4l3 3 3-3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </svg>
@@ -154,7 +164,7 @@ export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
                   <div key={group.key}>
                     <p className="px-2 text-[0.6875rem] tracking-wide text-fg-muted">{group.title}</p>
                     <ul className="mt-1">
-                      {SECTIONS.filter((s) => s.group === group.key).map((s) => (
+                      {PANEL.filter((s) => s.group === group.key).map((s) => (
                         <li key={s.href}>
                           <Link
                             href={s.href}
@@ -237,7 +247,7 @@ export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
                       href={s.href}
                       onClick={() => setSheet(false)}
                       aria-current={current === s.href ? "true" : undefined}
-                      className="flex items-baseline justify-between gap-3 rounded px-2 py-2 text-xs text-fg hover:bg-raised"
+                      className="flex min-h-11 items-center justify-between gap-3 rounded px-2 text-xs text-fg hover:bg-raised"
                     >
                       {s.label}
                       <span className="text-[0.6875rem] text-fg-muted">{s.hint}</span>
