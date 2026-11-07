@@ -27,6 +27,12 @@ Spec driven. Nothing gets built without a spec.
   Behaviour and an acceptance check, never filenames.
 - This file — always true, read on every prompt.
 
+**Prompt first.** Every request is rewritten before it is executed: improve it
+with the prompt-engineering skill, land it as `prompts/NNNN-<slug>.md`, map it
+with wayfinder into decision and implementation tickets, then build with ponytail
+(the lazy rung that holds). Shorthand executed verbatim is how a repo fills with
+features nobody asked for. See `prompts/README.md`.
+
 **Starting a phase.** Read this file and that phase's spec. Build what the spec
 asks and stop.
 

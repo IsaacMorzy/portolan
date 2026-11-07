@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Hero } from "@/components/landing/hero";
 import { Nav } from "@/components/landing/nav";
+import { Compare } from "@/components/landing/compare";
 import { Questions } from "@/components/landing/faq";
+import { Value } from "@/components/landing/value";
 import { Close, Grounding, MapSection, Teams, Workflow } from "@/components/landing/sections";
 import { FooterColumns } from "@/components/velora/footer-columns";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme";
@@ -33,9 +35,11 @@ export default async function LandingPage() {
       <Nav theme={theme} signedIn={signedIn} />
       <main className="flex-1">
         <Hero />
+        <Value />
         <Workflow />
         <MapSection />
         <Grounding />
+        <Compare />
         <Teams />
         <Questions />
         <Close signedIn={signedIn} />

@@ -12,6 +12,7 @@ const SECTIONS = [
   { href: "#workflow", label: "How it works", hint: "URL to map, stage by stage" },
   { href: "#map", label: "The map", hint: "Blast radius for one file" },
   { href: "#grounding", label: "Why it's true", hint: "What every claim cites" },
+  { href: "#compare", label: "Compared", hint: "Ten tools, four honest losses" },
   { href: "#teams", label: "Teams", hint: "One workspace, one boundary" },
   { href: "/security", label: "Security", hint: "What is read, who reads it back" },
 ];
