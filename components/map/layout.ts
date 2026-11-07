@@ -4,7 +4,11 @@ import type { MapEdge, MapObject } from "@/lib/graph/view";
 // Sizes are fixed px, not rem: dagre lays out in the same units React Flow
 // draws in, and the zoom does the scaling. The node components read these
 // constants so the box drawn is the box laid out.
-export const CHAR_WIDTH = 6.6; // Geist Mono advance at 11px
+// Advance of Geist Mono at the size labels are actually drawn at. This said 11px
+// while labels moved to 12px in 1b96191, so every box was measured for text that
+// no longer fit it — the kind of drift a comment cannot prevent and a screenshot
+// can only hint at.
+export const CHAR_WIDTH = 7.2;
 export const PAD_X = 10;
 export const FOLDED_MIN_HEIGHT = 40;
 export const FOLDED_MIN_WIDTH = 120;
@@ -49,7 +53,7 @@ export function layout(objects: readonly MapObject[], edges: readonly MapEdge[])
   // into columns that edge bundles then crossed; 28 is one step of breathing room,
   // paid for in canvas width, which is checked against a screenshot rather than
   // assumed to be better.
-  g.setGraph({ rankdir: "LR", nodesep: 28, ranksep: 72 });
+  g.setGraph({ rankdir: "LR", nodesep: 28, ranksep: 56 });
   g.setDefaultEdgeLabel(() => ({}));
   for (const o of objects) g.setNode(o.id, sizeOf(o));
   // Several row-level lines between the same two objects are one constraint
