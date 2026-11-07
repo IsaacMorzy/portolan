@@ -232,13 +232,18 @@ const TEAM_POINTS = [
 
 export function Teams() {
   return (
-    <section id="teams" className="scroll-mt-16 border-t border-line bg-surface">
+    <section id="teams" className="scroll-mt-16 border-t border-line bg-raised/40">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-16 md:py-28">
-        <h2 className="max-w-[16ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
-          One map your whole team can read
-        </h2>
+        <div>
+          <h2 className="max-w-[16ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+            One map your whole team can read
+          </h2>
+          <p className="mt-4 max-w-[34ch] text-[0.9375rem] leading-relaxed text-fg-muted">
+            Every organization gets its own workspace, and every read is scoped to it before the query leaves the server, so one workspace never sees another&apos;s files.
+          </p>
+        </div>
         <ul className="space-y-4">
-          {TEAM_POINTS.map((p) => (
+          {TEAM_POINTS.slice(1).map((p) => (
             <li key={p}>
               <SpotlightCard className="p-5 text-[0.9375rem] leading-relaxed text-fg-muted">{p}</SpotlightCard>
             </li>
