@@ -49,7 +49,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex h-full flex-col">
-        <ClerkProvider appearance={clerkAppearance}>{children}</ClerkProvider>
+        {/* In code, not env: the Vercel project still has the fallback set to
+            "/", which lands a signed-in person on the marketing page. Props win
+            over the env vars. */}
+        <ClerkProvider
+          appearance={clerkAppearance}
+          signInFallbackRedirectUrl="/dashboard"
+          signUpFallbackRedirectUrl="/dashboard"
+        >
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );
