@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { connection } from "next/server";
-import { AnalysisRow, type RowData } from "@/components/progress/analysis-row";
+import { AnalysesTable } from "@/components/progress/analyses-table";
+import type { RowData } from "@/components/progress/analysis-row";
 import { StateMark } from "@/components/state-mark";
 import { SubmitForm } from "@/components/submit-form";
 import { isStale, type Status } from "@/lib/pipeline/stages";
@@ -60,31 +61,7 @@ export default async function DashboardPage() {
           <p className="mt-1">Paste a public GitHub repository above to map it.</p>
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-auto">
-          <table className="w-full table-fixed border-collapse text-xs">
-            <colgroup>
-              <col />
-              <col className="w-28" />
-              <col className="hidden w-20 sm:table-column" />
-              <col className="w-20" />
-              <col className="hidden w-20 sm:table-column" />
-            </colgroup>
-            <thead className="sticky top-0 bg-canvas text-left text-fg-muted">
-              <tr className="h-7 border-b border-line">
-                <th className="px-3 font-normal">Repository</th>
-                <th className="px-3 font-normal">State</th>
-                <th className="hidden px-3 font-normal sm:table-cell">Commit</th>
-                <th className="px-3 text-right font-normal">Started</th>
-                <th className="hidden px-3 text-right font-normal sm:table-cell">Finished</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <AnalysisRow key={row.id} row={row} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AnalysesTable rows={rows} />
       )}
     </div>
   );

@@ -120,7 +120,14 @@ Not opinions — the four things that can be checked:
 
 ## 6. Order of work
 
-1. Inspector shell + selection state (table → inspector, no navigation).
+1. ~~Inspector shell + selection state (table → inspector, no navigation).~~
+   **Shipped.** `components/progress/analyses-table.tsx` owns the selection;
+   `analysis-inspector.tsx` renders the five facts and the stage message. Two
+   deliberate departures from the sketch above: the panel's height is its content
+   capped at 50% rather than a fixed 280px, and selecting does not use `aria-selected`
+   on the row as its accessible name — the repository name is a real `<button>`, so
+   the action is reachable by keyboard and announces itself, while its clicks bubble
+   to the row so mouse and Enter do the same thing rather than two things.
 2. `code-block` for failure detail and the CLI line.
 3. `file-tree` in the empty state.
 4. Strip tally refined to the twelve sizes and the 28px row rhythm.

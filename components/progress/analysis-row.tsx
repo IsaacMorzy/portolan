@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { StateMark } from "@/components/state-mark";
 import { STALE_AFTER_MS, type Progress } from "@/lib/pipeline/stages";
 import { sameProgress, useProgress } from "./use-progress";
@@ -18,16 +17,35 @@ export type RowData = {
 
 // One dashboard row. An unfinished one follows its own channel, so a run
 // started in another tab moves here too.
-export function AnalysisRow({ row }: { row: RowData }) {
+//
+// The row is clickable, and the repository name is a real button so that the same
+// action is reachable by keyboard and announces itself. The button carries no
+// click handler of its own: its clicks bubble to the row, which is why pressing
+// Enter and clicking with a mouse do exactly the same thing rather than twice.
+export function AnalysisRow({
+  row,
+  selected,
+  onSelect,
+}: {
+  row: RowData;
+  selected: boolean;
+  onSelect: () => void;
+}) {
   const { progress } = useProgress(row.id, row.progress);
   const stale = row.staleAtRender && sameProgress(progress, row.progress);
   const finishedNow = !row.finished && (progress.status === "complete" || progress.status === "failed");
   const note = progress.status === "complete" ? null : progress.message;
 
   return (
-    <tr className="border-b border-line align-top hover:bg-raised">
+    <tr
+      onClick={onSelect}
+      aria-selected={selected}
+      className={`cursor-pointer border-b border-line align-top hover:bg-raised ${
+        selected ? "bg-raised" : ""
+      }`}
+    >
       <td className="truncate px-3 py-1.5 font-mono">
-        <Link href={`/analyses/${row.id}`} className="block">
+        <button type="button" className="block w-full text-left" aria-pressed={selected}>
           {row.repository ? (
             <>
               <span className="text-fg-muted">{row.repository.owner}/</span>
@@ -41,7 +59,7 @@ export function AnalysisRow({ row }: { row: RowData }) {
               {stale ? `No progress for over ${STALE_AFTER_MS / 60000} minutes — ${note}` : note}
             </span>
           )}
-        </Link>
+        </button>
       </td>
       <td className="px-3 py-1.5">
         <span className={`flex items-center gap-1.5 ${progress.status === "queued" ? "text-fg-muted" : "text-fg"}`}>
