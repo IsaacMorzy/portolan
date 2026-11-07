@@ -6,7 +6,17 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 // asked to sign in; everything under /dashboard and /analyses stays behind
 // auth. /security is public because a page arguing about data access that
 // itself demands an account is arguing the wrong way round.
-const isPublic = createRouteMatcher(["/", "/security(.*)", "/sign-in(.*)", "/sign-up(.*)"]);
+//
+// /api/cron is public to the middleware, not to the world: the caller is
+// Vercel's scheduler, which has no session, and the route authorises itself
+// with CRON_SECRET before it does anything.
+const isPublic = createRouteMatcher([
+  "/",
+  "/security(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/cron(.*)",
+]);
 
 // Protection happens here, before any route renders, so a signed-out visitor
 // gets a redirect and never receives the page's HTML.

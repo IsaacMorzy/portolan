@@ -79,7 +79,7 @@ async function loadAnalysis(id: string, orgId: string): Promise<Loaded | null> {
   const supabase = await createServerSupabase();
   const { data: analysis, error } = await supabase
     .from("analyses")
-    .select("id, status, stage, stage_message, error, commit_sha, schema_version, coverage, detected_projects, created_at, started_at, project:projects(repo_owner, repo_name)")
+    .select("id, status, stage, stage_message, error, commit_sha, previous_commit_sha, schema_version, coverage, detected_projects, created_at, started_at, project:projects(repo_owner, repo_name)")
     .eq("id", id)
     .eq("organization_id", orgId)
     .maybeSingle();
@@ -88,7 +88,7 @@ async function loadAnalysis(id: string, orgId: string): Promise<Loaded | null> {
   const repository = { owner: analysis.project.repo_owner, name: analysis.project.repo_name };
 
   if (analysis.status === "complete" && analysis.commit_sha) {
-    const header = { analysisId: analysis.id, repository, commitSha: analysis.commit_sha };
+    const header = { analysisId: analysis.id, repository, commitSha: analysis.commit_sha, previousCommitSha: analysis.previous_commit_sha };
     if (analysis.schema_version !== SCHEMA_VERSION) return { kind: "outdated", header };
     const stored = await loadStoredAnalysis(supabase, {
       id: analysis.id,
