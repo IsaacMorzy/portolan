@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Hero } from "@/components/landing/hero";
 import { Nav } from "@/components/landing/nav";
-import { Close, Footer, Grounding, MapSection, Teams, Workflow } from "@/components/landing/sections";
+import { Questions } from "@/components/landing/faq";
+import { Close, Grounding, MapSection, Teams, Workflow } from "@/components/landing/sections";
+import { FooterColumns } from "@/components/velora/footer-columns";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -35,9 +37,10 @@ export default async function LandingPage() {
         <MapSection />
         <Grounding />
         <Teams />
+        <Questions />
         <Close signedIn={signedIn} />
       </main>
-      <Footer />
+      <FooterColumns />
     </div>
   );
 }

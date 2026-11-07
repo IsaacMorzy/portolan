@@ -13,6 +13,7 @@ const SECTIONS = [
   { href: "#map", label: "The map", hint: "Blast radius for one file" },
   { href: "#grounding", label: "Why it's true", hint: "What every claim cites" },
   { href: "#teams", label: "Teams", hint: "One workspace, one boundary" },
+  { href: "/security", label: "Security", hint: "What is read, who reads it back" },
 ];
 
 export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {

@@ -40,23 +40,30 @@ check("cache key is stable for one model", a === cacheKey("explain-file", "opena
 const known: Record<string, string[]> = {
   deepseek: ["deepseek-flash", "deepseek-v4-pro"],
   openai: ["gpt-5.5-2026-04-23", "gpt-5.4-mini-2026-03-17"],
+  cerebras: ["gpt-oss-120b", "qwen-3.8-27b"],
 };
 check("model id is a known id for this provider", known[provider()]?.includes(modelId(explain)) ?? false, modelId(explain));
 
 // 4. Live call. Reported, not required: a provider with no credit still passes
 //    the wiring checks above, which is the point of separating them.
-const keyVar = provider() === "openai" ? "OPENAI_API_KEY" : "DEEPSEEK_API_KEY";
+const ENDPOINTS: Record<string, { keyVar: string; url: string; model: string }> = {
+  openai: { keyVar: "OPENAI_API_KEY", url: "https://api.openai.com/v1/chat/completions", model: "gpt-5.4-mini-2026-03-17" },
+  deepseek: { keyVar: "DEEPSEEK_API_KEY", url: "https://api.deepseek.com/chat/completions", model: "deepseek-flash" },
+  cerebras: { keyVar: "CEREBRAS_API_KEY", url: "https://api.cerebras.ai/v1/chat/completions", model: "qwen-3.8-27b" },
+};
+const endpoint = ENDPOINTS[provider()];
+const keyVar = endpoint.keyVar;
 if (!process.env[keyVar]?.trim()) {
   console.log(`SKIP  live call — ${keyVar} is not set`);
 } else {
-  const res = await fetch("https://api.deepseek.com/chat/completions", {
+  const res = await fetch(endpoint.url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+      Authorization: `Bearer ${process.env[keyVar]}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "deepseek-flash",
+      model: endpoint.model,
       messages: [{ role: "user", content: "Reply with the single word: ok" }],
       max_tokens: 5,
       reasoning_effort: "low",
@@ -65,7 +72,7 @@ if (!process.env[keyVar]?.trim()) {
   const body = await res.text();
   if (res.ok) {
     console.log(`PASS  live call — HTTP ${res.status}: ${body.slice(0, 120)}`);
-  } else if (body.includes("insufficient_balance")) {
+  } else if (body.includes("insufficient_balance") || body.includes("payment_required")) {
     console.log(`SKIP  live call — account has no balance (HTTP ${res.status}); add credit to enable`);
   } else {
     check("live call", false, `HTTP ${res.status}: ${body.slice(0, 160)}`);

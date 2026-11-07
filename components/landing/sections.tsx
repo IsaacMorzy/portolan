@@ -276,20 +276,3 @@ export function Close({ signedIn }: { signedIn: boolean }) {
     </section>
   );
 }
-
-export function Footer() {
-  return (
-    <footer className="border-t border-line">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <p className="text-[2.5rem] leading-none font-semibold tracking-[-0.04em] text-fg md:text-[4rem]">
-          Cartograph
-        </p>
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-fg-muted">
-          <Link href="/sign-in" className="transition-colors hover:text-fg">Sign in</Link>
-          <Link href="/sign-up" className="transition-colors hover:text-fg">Create an account</Link>
-          <span className="ml-auto">TypeScript repositories, parsed rather than guessed.</span>
-        </div>
-      </div>
-    </footer>
-  );
-}

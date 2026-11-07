@@ -10,7 +10,7 @@ import { wrapOpenAI } from "langsmith/wrappers/openai";
 // ("explain"/"classify") and this file resolves it to a provider and a model,
 // so no call site has to know which backend is configured.
 
-export type Provider = "openai" | "deepseek";
+export type Provider = "openai" | "deepseek" | "cerebras";
 
 /** The models each provider uses, per role. Exact snapshots, never a moving
  * alias: an alias changes the model under a cached answer without changing its
@@ -25,6 +25,13 @@ const PROVIDER_MODELS = {
     explain: "deepseek-v4-pro",
     classify: "deepseek-flash",
   },
+  // Two models, not a family: the reasoning one explains, the small one
+  // classifies. Split by role because classify runs once per file and a
+  // reasoning model there costs latency for an answer that is a label.
+  cerebras: {
+    explain: "gpt-oss-120b",
+    classify: "qwen-3.8-27b",
+  },
 } as const satisfies Record<Provider, Record<string, string>>;
 
 /** The roles a model is selected for. */
@@ -37,7 +44,8 @@ function envProvider(): Provider {
   const raw = process.env.AI_PROVIDER?.trim().toLowerCase();
   if (raw === "deepseek") return "deepseek";
   if (raw === "openai") return "openai";
-  if (raw) throw new Error(`AI_PROVIDER is "${raw}", which isn't a provider; use "openai" or "deepseek"`);
+  if (raw === "cerebras") return "cerebras";
+  if (raw) throw new Error(`AI_PROVIDER is "${raw}", which isn't a provider; use "openai", "deepseek" or "cerebras"`);
   // Unset: pick whichever key exists, preferring OpenAI, so an existing setup
   // that never set AI_PROVIDER keeps working unchanged.
   return process.env.OPENAI_API_KEY?.trim() ? "openai" : "deepseek";
@@ -72,11 +80,13 @@ export function tracingStatus(): TracingStatus {
 const BASE_URLS: Record<Provider, string | undefined> = {
   openai: undefined, // SDK default
   deepseek: "https://api.deepseek.com",
+  cerebras: "https://api.cerebras.ai/v1",
 };
 
 const KEY_VARS: Record<Provider, string> = {
   openai: "OPENAI_API_KEY",
   deepseek: "DEEPSEEK_API_KEY",
+  cerebras: "CEREBRAS_API_KEY",
 };
 
 let client: { provider: Provider; sdk: OpenAI } | null = null;

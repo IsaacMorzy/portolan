@@ -16,8 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // metadataBase makes every relative URL below absolute; without it Next warns
+  // and social cards resolve against localhost.
+  metadataBase: new URL("https://codegraph-navy.vercel.app"),
   title: "Cartograph",
   description: "Dependency maps of public GitHub repositories",
+  openGraph: { siteName: "Cartograph", type: "website" },
+  twitter: { card: "summary_large_image" },
 };
 
 // Clerk's components read the same tokens as the app, so they follow the
