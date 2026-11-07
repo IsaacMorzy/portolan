@@ -75,7 +75,11 @@ export function Pricing() {
                 <th scope="row" className="px-2 py-2 text-[0.8125rem] font-normal text-fg">
                   {row.label}
                   {row.status === "building" && (
-                    <span className="ml-2 text-[0.6875rem] text-fg-muted">in build</span>
+                    <span className="ml-2 inline-block whitespace-nowrap text-[0.6875rem] text-fg-muted">
+                    {/* nowrap: a two-word status that breaks after "in" reads as a
+                        typo in a table where every other cell is one line. */}
+                    in build
+                  </span>
                   )}
                 </th>
                 <td className="px-2 py-2 text-[0.8125rem] text-fg-muted">{row.free}</td>
