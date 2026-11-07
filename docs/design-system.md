@@ -209,7 +209,7 @@ Not by review, because review only sees what gets reviewed.
 | `scripts/e2e/screenshots.mjs` + a vision pass | "passes the numbers, looks wrong" |
 | `scripts/check/design.mjs` — off-scale sizes, bare `border`, off-grid spacing, non-token colours | drift in source, before it reaches a browser |
 | `scripts/check/slop.mjs` — gradients, default palette, glass, shadows, emoji, eyebrows | the §8 list, mechanically |
-| `.githooks/pre-commit` | all of the above, on every commit |
+| `scripts/gate.sh` | all of the above, in one list — run bare by the commit hook, with `--full` by CI |
 | `scripts/check/secrets.mjs` | a credential reaching a commit |
 | `scripts/check/guards.mjs` | an entry point without a guard, a secret-key client in a browser bundle, a paid route without a limit |
 | `scripts/check/bar.mjs` | a suppression added instead of a fix |

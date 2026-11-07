@@ -1,24 +1,7 @@
 #!/bin/sh
-# The machine half of AGENTS.md. Five checks that catch what review misses:
-# a secret leaving the machine, an entry point that forgot its guard, the design
-# system drifting, the rules file going stale, and the bar being lowered instead
-# of met.
+# The machine half of AGENTS.md. The list lives in scripts/gate.sh so this hook
+# and CI cannot disagree about what "passing" means.
 #
-# Fast by design — these read files and git. The browser checks (pnpm e2e) are
-# too slow for a commit and belong to CI or a deliberate run; a hook slow enough
-# to be endured with --no-verify teaches everyone to use --no-verify.
-set -e
-
-for check in secrets guards slop design bar; do
-  printf '  %-9s ' "$check"
-  node "scripts/check/$check.mjs"
-done
-
-printf '  %-9s ' workflow
-node scripts/check/workflow.mjs --staged
-
-# The two gates a commit genuinely must not break.
-npx tsc --noEmit
-npx eslint . --quiet
-
-echo "  pre-commit ok"
+# Browser checks (pnpm e2e) are deliberately absent: they take minutes, and a
+# hook slow enough to be endured with --no-verify teaches everyone to use it.
+exec sh scripts/gate.sh

@@ -23,7 +23,9 @@
     "check:workflow": "node scripts/check/workflow.mjs",
     "check:secrets": "node scripts/check/secrets.mjs",
     "check:guards": "node scripts/check/guards.mjs",
-    "check:bar": "node scripts/check/bar.mjs"
+    "check:bar": "node scripts/check/bar.mjs",
+    "gate": "sh scripts/gate.sh",
+    "gate:full": "sh scripts/gate.sh --full"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.7",

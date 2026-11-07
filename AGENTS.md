@@ -29,7 +29,7 @@ not a gap to fill by guessing:
 | --- | --- |
 | **Outcome** | What is true afterwards that is not true now. One sentence. If it takes three, this is two requests. |
 | **Constraints** | The standing rules that bind this work: token-only styling, no new dependency without asking, secrets never client-side, one commit per idea. Only the ones that apply — a wall of boilerplate gets skipped. |
-| **Definition of done** | The check that will be run, named. `pnpm check` + `pnpm test` + `pnpm e2e` + the specific assertion this change should make pass. "It works" is not a check. |
+| **Definition of done** | The check that will be run, named. `pnpm gate` + `pnpm e2e` + the specific assertion this change should make pass. "It works" is not a check. |
 | **Failure modes** | What this change is most likely to break. Name it before starting, because the thing you did not name is the thing that ships. |
 | **Scope** | What is deliberately not being done, so it does not get done by accident on the way past. |
 
@@ -296,7 +296,14 @@ the two gates that a commit genuinely must not break.
 | `scripts/check/bar.mjs` | `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, and `dangerouslySetInnerHTML` above a declared ceiling. The numbers are the counts today, so the rule is "no more", and lowering one is progress you can measure. |
 | `npx tsc --noEmit`, `npx eslint . --quiet` | Types and lint. |
 
-Run them by hand with `pnpm check`, or one at a time with `pnpm check:secrets`,
+**One gate, two callers.** The list lives in `scripts/gate.sh`; `.githooks/pre-commit`
+runs it bare, `.github/workflows/ci.yml` runs it with `--full` (which adds the tests
+and a build with no environment at all). The workflow is a YAML shim and nothing
+more, because two copies of the same list drift and the copy nobody runs is always
+the stale one.
+
+Run it by hand with `pnpm gate` (`pnpm gate:full` for the CI tail), or one check at
+a time with `pnpm check:secrets`,
 `check:guards`, `check:slop`, `check:design`, `check:bar`, `check:workflow`.
 
 Each was tested by writing a deliberate violation and confirming it fails — a

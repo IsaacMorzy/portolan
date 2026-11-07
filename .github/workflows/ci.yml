@@ -1,17 +1,12 @@
 # The same gate the pre-commit hook runs, where it cannot be skipped.
 #
-# .githooks/pre-commit is a courtesy: it stops a bad commit on the machine that
-# wrote it, and it dies the moment someone types --no-verify. This is the version
-# that holds, because a missing check here fails the pull request rather than a
-# terminal somebody scrolled past.
+# The list itself lives in scripts/gate.sh — this file is only the part GitHub
+# requires. Keeping the checks in YAML as well would mean two copies of the same
+# list drifting apart, and the copy nobody runs is always the stale one.
 #
-# Two jobs on purpose:
-#   checks  fast, no network, no browser. Every rule in AGENTS.md that a script
-#           can judge: secrets, guards, slop, design drift, the bar, workflow.
-#   build   the thing actually compiles and the tests pass.
-#
-# Browser checks (pnpm e2e) are NOT here. They need Clerk keys and a running
-# server, and a red build for a missing secret teaches people to ignore red.
+# Browser checks (pnpm e2e) are NOT part of the gate: they need Clerk keys and a
+# running server, and a red build for a missing secret teaches people to ignore
+# red.
 
 name: ci
 
@@ -27,49 +22,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
+  gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # workflow.mjs reads the last commit subject, and a shallow clone has
+          # no second commit to read it against.
+          fetch-depth: 2
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-
-      # Each check prints the reason a finding exists, not just its location, so a
-      # failure here reads like a review comment rather than a stack trace.
-      - name: secrets
-        run: node scripts/check/secrets.mjs
-      - name: guards
-        run: node scripts/check/guards.mjs
-      - name: slop
-        run: node scripts/check/slop.mjs
-      - name: design drift
-        run: node scripts/check/design.mjs
-      - name: the bar
-        run: node scripts/check/bar.mjs
-      - name: workflow
-        run: node scripts/check/workflow.mjs
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-
-      - run: npx tsc --noEmit
-      - run: npx eslint . --quiet
-
-      # node --test, so a failure names the assertion rather than a suite.
-      - run: pnpm test
-
-      # A build with no environment at all is the honest test: if this step needs
-      # a secret to compile, the app will not deploy from a clean checkout either.
-      - run: pnpm build
+      - run: sh scripts/gate.sh --full
