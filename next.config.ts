@@ -6,17 +6,12 @@ assertEnv();
 /**
  * Security headers.
  *
- * The CSP here is deliberately a narrow subset — `frame-ancestors`,
- * `base-uri`, `object-src`. Those three stop clickjacking and injected base or
- * plugin URLs, and none of them touch scripts or styles, so nothing about the
- * page can break.
- *
- * A `script-src` policy is the one that would help most and is the one I have
- * not written: Next injects inline bootstrap scripts and Clerk loads its client
- * from the proxied Frontend API, so a `'self'`-only policy either needs a nonce
- * threaded through middleware or it breaks sign-in. Breaking the login page to
- * put a header in a paper is the wrong trade, and a policy written blind and
- * shipped is worse than one that is visibly absent.
+ * The CSP is no longer set here: it is built per-request in proxy.ts (a
+ * nonce is stamped on the forwarded request header so Next's server render
+ * can read it via getScriptNonceFromHeaders, and on the response header so
+ * the browser enforces it). A second, nonce-less CSP here would intersect
+ * with the middleware one and silently drop the nonce, so only headers safe
+ * to apply to every response stay here.
  */
 const securityHeaders = [
   // A year, subdomains included. The domain is HTTPS-only already; this stops
@@ -29,7 +24,6 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   // Belt and braces with frame-ancestors, for anything that predates CSP.
   { key: "X-Frame-Options", value: "DENY" },
-  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
