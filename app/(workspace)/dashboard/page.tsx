@@ -7,7 +7,7 @@ import { SubmitForm } from "@/components/submit-form";
 import { FileTree, type FileNode } from "@/components/velora/file-tree";
 import { isStale, type Status } from "@/lib/pipeline/stages";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ago } from "@/lib/time";
+import { ago, span } from "@/lib/time";
 
 const LIST_LIMIT = 100;
 
@@ -119,5 +119,9 @@ async function loadRows(orgId: string): Promise<RowData[]> {
     staleAtRender: isStale(a, now),
     created: { iso: a.created_at, ago: ago(a.created_at, now) },
     finished: a.finished_at ? { iso: a.finished_at, ago: ago(a.finished_at, now) } : null,
+    // Only a finished run has a duration. A failed one has no finished_at, and
+    // measuring it to "when we looked" would be a number that changes every
+    // refresh — worse than an em dash.
+    took: a.started_at && a.finished_at ? span(a.started_at, a.finished_at) : null,
   }));
 }

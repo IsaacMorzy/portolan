@@ -13,6 +13,8 @@ export type RowData = {
   // Formatted by the server, so the browser renders the same text it was sent.
   created: { iso: string; ago: string };
   finished: { iso: string; ago: string } | null;
+  /** Formatted by the server, like every other date here. Null while a run is unfinished. */
+  took?: string | null;
 };
 
 // One dashboard row. An unfinished one follows its own channel, so a run
@@ -77,6 +79,9 @@ export function AnalysisRow({
         <time dateTime={row.created.iso} title={row.created.iso}>
           {row.created.ago}
         </time>
+      </td>
+      <td className="hidden px-3 py-1 text-right text-fg-muted tabular-nums md:table-cell">
+        {row.took ?? "—"}
       </td>
       <td className="hidden px-3 py-1 text-right text-fg-muted tabular-nums sm:table-cell">
         {row.finished ? (

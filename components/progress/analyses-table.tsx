@@ -49,6 +49,11 @@ export function AnalysesTable({ rows }: { rows: RowData[] }) {
               <th scope="col" className="px-3 text-right font-normal">
                 Started
               </th>
+              {/* Duration is the column that makes two runs comparable without
+                  opening either: age says when, took says how long. */}
+              <th scope="col" className="hidden px-3 text-right font-normal md:table-cell">
+                Took
+              </th>
               <th scope="col" className="hidden px-3 text-right font-normal sm:table-cell">
                 Finished
               </th>
