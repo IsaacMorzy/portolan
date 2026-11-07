@@ -46,7 +46,7 @@ async function visit(page, url) {
     const title = await page.title();
     if (!challenged && !title.includes("Checkpoint")) return response;
     if (attempt === 4) {
-      console.error(`\n  BLOCKED  ${url}\n  Vercel's checkpoint answered 4 times. Not a page defect.\n`);
+      console.error(`\n  BLOCKED  ${url}\n  Vercel's checkpoint answered 4 times. Not a page defect.\n  Set VERCEL_AUTOMATION_BYPASS_SECRET to pass it deterministically.\n`);
       process.exit(3);
     }
     console.error(`  challenge on attempt ${attempt}, waiting 20s`);

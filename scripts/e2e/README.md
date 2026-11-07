@@ -59,3 +59,21 @@ measures the harness; this one imports it.
 The script also measures what a screenshot cannot: label/value alignment, panel
 height, whether the panel or the page scrolls, and the set of font sizes the panel
 actually renders — which must stay inside the twelve in `docs/design-system.md` §4.
+
+## The preview deployment says "Vercel Security Checkpoint"
+
+That is Vercel's bot protection answering automated sign-in — correct of it, since
+the page it protects hands out a session. Two ways through, and only one of them
+is deterministic:
+
+1. **Bypass secret (recommended, one click).** Vercel → project → Settings →
+   Deployment Protection → **Protection Bypass for Automation** → Generate. Put it
+   in `.env.local` as `VERCEL_AUTOMATION_BYPASS_SECRET`. `harness.mjs` sends it with
+   every page context along with `x-vercel-set-bypass-cookie`, so Clerk's redirect
+   to `/dashboard` stays inside the bypass too. Nothing else to change.
+2. **Wait it out.** The checkpoint is per-IP and intermittent; some runs pass and
+   the next one on the same address does not. A retry loop lives in `visit()`, but
+   against a bot check more retries are not worth more retries.
+
+When blocked, the scripts exit `3` with `BLOCKED` rather than reporting a page
+defect — a challenge page is not evidence about the app.

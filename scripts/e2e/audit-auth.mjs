@@ -51,7 +51,7 @@ async function visit(page, url) {
     if (!challenged) return response;
     if (attempt === 3) {
       console.error(`
-  BLOCKED  ${url}\n  Vercel's per-IP checkpoint is challenging this address. Not a page defect.\n  Wait it out, or run against ${LOCAL} once Clerk is configured for it.\n`);
+  BLOCKED  ${url}\n  Vercel's per-IP checkpoint is challenging this address. Not a page defect.\n  Set VERCEL_AUTOMATION_BYPASS_SECRET (Vercel → Settings → Deployment Protection →\n  Protection Bypass for Automation → Generate) and it will be sent with every request.\n  Otherwise wait it out, or run against ${LOCAL} once Clerk is configured for it.\n`);
       process.exit(3);
     }
     await page.waitForTimeout(15_000);

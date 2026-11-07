@@ -27,7 +27,34 @@ export async function launch() {
     process.exit(2);
   }
   const { chromium } = await import(`${PW_ROOT}/playwright-core/index.mjs`);
-  return chromium.launch({ executablePath: CHROME, args: ["--no-sandbox"] });
+
+  // Vercel answers automated sign-in on the preview with a bot checkpoint, and it
+  // is right to: the page it protects is one that would grant a session. The
+  // supported way through is an automation bypass secret, which the project owner
+  // generates once in Vercel → Settings → Deployment Protection → Protection Bypass
+  // for Automation. When that secret is in the environment it is sent with every
+  // page context, and `x-vercel-set-bypass-cookie` makes the resulting cookie cover
+  // the navigations that follow, including Clerk's redirect to /dashboard.
+  //
+  // Absent the secret nothing changes, and the blocked message says what to click.
+  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+  const contextOptions = bypass
+    ? {
+        extraHTTPHeaders: {
+          "x-vercel-protection-bypass": bypass,
+          "x-vercel-set-bypass-cookie": "samesitenone",
+        },
+      }
+    : {};
+
+  const browser = await chromium.launch({ executablePath: CHROME, args: ["--no-sandbox"] });
+  if (!bypass) return browser;
+
+  // newPage must inherit the headers, so wrap it rather than editing every caller.
+  const newPage = browser.newPage.bind(browser);
+  browser.newPage = async (options = {}) =>
+    newPage({ ...contextOptions, ...options });
+  return browser;
 }
 
 /** Opens a page and collects page errors, so a check fails on a broken render. */
