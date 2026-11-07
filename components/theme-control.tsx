@@ -28,7 +28,7 @@ export function ThemeControl({ initial }: { initial: Theme }) {
       aria-label={label}
       title={label}
       aria-pressed={theme === "dark"}
-      className="flex size-7 items-center justify-center rounded text-fg-muted hover:bg-raised hover:text-fg"
+      className="flex size-7 items-center justify-center rounded text-fg hover:bg-raised"
     >
       {/* Drawn, not typed: an emoji here would take its colour from the platform
           and break the token palette in dark mode. */}

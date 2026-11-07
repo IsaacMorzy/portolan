@@ -9,7 +9,7 @@ import { Mark } from "@/components/landing/mark";
  * is the block's, and it is what a site with more than one page needs.
  */
 const TAGLINE =
-  "Dependency maps of a TypeScript repository. Every edge is an import the parser resolved, and every claim cites a file it read.";
+  "Cartograph draws a TypeScript repository as a map of modules. Every edge is an import the parser resolved, and every claim cites a file it read.";
 
 const COLUMNS = [
   {

@@ -17,6 +17,11 @@ const SECTIONS = [
   { href: "/security", label: "Security", hint: "What is read, who reads it back" },
 ];
 
+// The two that earn their place in the bar; SECTIONS is still the full list.
+const INLINE = SECTIONS.filter((s) => s.href === "#workflow" || s.href === "#map");
+
+const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+
 export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
   const [menu, setMenu] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -63,6 +68,22 @@ export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
           <Mark className="size-[1.125rem] text-accent" />
           Cartograph
         </Link>
+
+        {/* Two anchors, not five: "How it works" and "The map" are what a reader
+            arriving cold wants to check first, and a menu is a tax on the two
+            questions the page answers best. The rest stay in the menu, so the
+            header does not become a sitemap. */}
+        <nav aria-label="Sections" className="ml-3 hidden items-center gap-1 md:flex">
+          {INLINE.map((s) => (
+            <a
+              key={s.href}
+              href={s.href}
+              className={`flex h-6 items-center rounded px-2 text-xs text-fg-muted transition-colors hover:bg-raised hover:text-fg ${focusRing}`}
+            >
+              {s.label}
+            </a>
+          ))}
+        </nav>
 
         <div className="relative ml-2 hidden md:block">
           <button
