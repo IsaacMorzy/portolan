@@ -71,7 +71,7 @@ export function ExplanationPanel(props: {
     <div className="px-3 py-3">
       <FreshnessNote freshness={props.freshness} target={target} analysisId={props.analysisId} commitSha={props.commitSha} />
       <ExplanationText text={result.body} isPath={props.isPath} onPath={props.renderPath} />
-      <div className="mt-3 space-y-0.5 border-t border-line pt-2 text-[10px] text-fg-muted">
+      <div className="mt-3 space-y-0.5 border-t border-line pt-2 text-[11px] text-fg-muted">
         {result.labelled && (
           <p>
             {result.labelled.role === null
@@ -95,10 +95,10 @@ function FreshnessNote(props: { freshness: Freshness | undefined; target: Explai
   if (!f || f.status === "current") return null;
   const analysed = <span className="font-mono">{props.commitSha.slice(0, 7)}</span>;
   if (f.status === "checking") {
-    return <p className="mb-2 text-[10px] text-fg-muted">Checking the repository for newer commits…</p>;
+    return <p className="mb-2 text-[11px] text-fg-muted">Checking the repository for newer commits…</p>;
   }
   if (f.status === "unknown") {
-    return <p className="mb-2 text-[10px] text-fg-muted">Couldn&apos;t check whether this is still current: {f.error}</p>;
+    return <p className="mb-2 text-[11px] text-fg-muted">Couldn&apos;t check whether this is still current: {f.error}</p>;
   }
   const head = <span className="font-mono">{f.head.slice(0, 7)}</span>;
   let sentence: ReactNode;
@@ -108,7 +108,7 @@ function FreshnessNote(props: { freshness: Freshness | undefined; target: Explai
     sentence = <>The repository has moved past {analysed} to {head}. This file is unchanged, but its neighbours may not be.</>;
   else sentence = <>The repository has moved past {analysed} to {head}, so this explanation may be stale.</>;
   return (
-    <div className="mb-3 rounded-[3px] border border-line bg-raised px-2 py-1.5 text-[11px]">
+    <div className="mb-3 rounded-[3px] border-line border-line bg-raised px-2 py-1.5 text-[11px]">
       <p>{sentence}</p>
       <div className="mt-1.5">
         <RerunButton analysisId={props.analysisId} label="Re-analyse" onStarted={() => router.refresh()} />
@@ -119,7 +119,7 @@ function FreshnessNote(props: { freshness: Freshness | undefined; target: Explai
 
 function ExplainButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="rounded-[3px] border border-line px-2 py-0.5 text-[11px] hover:bg-raised">
+    <button type="button" onClick={onClick} className="rounded-[3px] border-line border-line px-2 py-0.5 text-[11px] hover:bg-raised">
       {label}
     </button>
   );

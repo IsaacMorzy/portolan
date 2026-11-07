@@ -19,7 +19,7 @@ export function RerunButton({ analysisId, onStarted, label = "Re-run" }: { analy
             if (!result.error) onStarted();
           })
         }
-        className="h-6 rounded border border-line px-2 text-xs hover:bg-raised disabled:text-fg-muted"
+        className="h-6 rounded border-line border-line px-2 text-xs hover:bg-raised disabled:text-fg-muted"
       >
         {pending ? "Starting…" : label}
       </button>

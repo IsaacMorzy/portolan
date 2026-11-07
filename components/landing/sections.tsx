@@ -50,7 +50,7 @@ export function Workflow() {
     <section id="workflow" className="border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 [&>*]:min-w-0 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-16 md:py-28">
         <div>
-          <h2 className="max-w-[18ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+          <h2 className="max-w-[18ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
             From a URL to a map you can read
           </h2>
           <p className="mt-4 max-w-[42ch] text-[0.9375rem] leading-relaxed text-fg-muted">
@@ -158,7 +158,7 @@ export function MapSection() {
         </div>
 
         <div className="order-1 md:order-2">
-          <h2 className="max-w-[20ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+          <h2 className="max-w-[20ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
             Change one file, see everything it touches
           </h2>
           <p className="mt-4 max-w-[46ch] text-[0.9375rem] leading-relaxed text-fg-muted">
@@ -185,7 +185,7 @@ export function Grounding() {
     <section id="grounding" className="border-t border-line">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:gap-16 md:py-28">
         <div>
-          <h2 className="max-w-[22ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+          <h2 className="max-w-[22ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
             The explanation can only cite what the parser saw
           </h2>
           <p className="mt-4 max-w-[46ch] text-[0.9375rem] leading-relaxed text-fg-muted">
@@ -198,7 +198,7 @@ export function Grounding() {
           </p>
         </div>
 
-        <blockquote className="rounded border border-line bg-surface p-5">
+        <blockquote className="rounded border-line border-line bg-surface p-5">
           <p className="text-[0.9375rem] leading-relaxed">
             <span className="font-mono text-xs text-accent">route.ts</span> imports
             <span className="font-mono text-xs text-accent"> session.ts</span> to read the caller, then
@@ -234,7 +234,7 @@ export function Teams() {
   return (
     <section id="teams" className="border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-16 md:py-28">
-        <h2 className="max-w-[16ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+        <h2 className="max-w-[16ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
           One map your whole team can read
         </h2>
         <ul className="space-y-4">
@@ -275,7 +275,7 @@ export function Close({ signedIn }: { signedIn: boolean }) {
         </div>
 
         {/* The product draws maps; this is one, in the smallest form that still
-            reads as a map. Dots take the border colour so it stays quiet, and
+            reads as a map. Dots take the border-line colour so it stays quiet, and
             the arcs take the accent so there is one moving thing on the page. */}
         <div className="relative mx-auto aspect-square w-full max-w-[300px] opacity-80" aria-hidden="true">
           <Globe

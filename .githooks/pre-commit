@@ -1,0 +1,18 @@
+#!/bin/sh
+# The machine half of AGENTS.md. Three checks that catch what review misses:
+# the design system drifting, the rules file going stale, and a commit that never
+# ran the checks the repo's own definition of done requires.
+#
+# Fast by design — slop and drift read files, workflow reads git. The browser
+# checks (pnpm e2e) are too slow for a commit and belong to CI or a deliberate run.
+set -e
+
+echo "  slop      "; node scripts/check/slop.mjs
+echo "  design    "; node scripts/check/design.mjs
+echo "  workflow  "; node scripts/check/workflow.mjs --staged
+
+# The type and lint gates are the ones a commit genuinely must not break.
+npx tsc --noEmit
+npx eslint . --quiet
+
+echo "  pre-commit ok"

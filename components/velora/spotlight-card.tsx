@@ -35,7 +35,7 @@ export function SpotlightCard({
       data-slot="spotlight-card"
       onMouseMove={handleMouseMove}
       className={cn(
-        "group/spotlight relative overflow-hidden rounded border border-line bg-surface",
+        "group/spotlight relative overflow-hidden rounded border-line border-line bg-surface",
         className
       )}
       style={

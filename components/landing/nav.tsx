@@ -81,7 +81,7 @@ export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
           <div
             id="nav-menu"
             hidden={!menu}
-            className="absolute top-full left-0 z-40 mt-2 w-[19rem] rounded border border-line bg-surface p-1.5"
+            className="absolute top-full left-0 z-40 mt-2 w-[19rem] rounded border-line border-line bg-surface p-1.5"
           >
             <ul>
               {SECTIONS.map((s) => (

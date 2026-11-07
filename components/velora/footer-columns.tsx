@@ -48,7 +48,7 @@ export function FooterColumns() {
         {/* The wordmark, from Velora's footer-wordmark block: one large line of
             type as the page's last gesture. Opacity, not a second colour, so it
             stays quiet in both themes. */}
-        <p className="mb-12 text-[3.25rem] leading-none font-semibold tracking-[-0.045em] opacity-20 select-none md:text-[5rem]">
+        <p className="mb-12 text-[3.5rem] leading-none font-semibold tracking-[-0.045em] opacity-20 select-none md:text-[5rem]">
           Cartograph
         </p>
 

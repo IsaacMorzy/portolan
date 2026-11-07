@@ -54,7 +54,7 @@ function Node({ node, depth }: { node: FileNode; depth: number }) {
             <span className="font-medium">{node.name}</span>
           </button>
         ) : (
-          <span className="flex items-center gap-1.5 px-1 py-0.5 pl-[1.125rem] text-fg-muted">
+          <span className="flex items-center gap-1.5 px-1 py-0.5 pl-4 text-fg-muted">
             {node.name}
           </span>
         )}
@@ -81,7 +81,7 @@ export function FileTree({ tree, className }: FileTreeProps) {
       data-slot="file-tree"
       // `border` with no colour falls back to currentColor in Tailwind v4, which in
       // dark mode is near-white text — a bright outline on a dark card.
-      className={cn("w-full rounded-xl border border-line bg-surface p-3 font-mono", className)}
+      className={cn("w-full rounded-xl border-line border-line bg-surface p-3 font-mono", className)}
     >
       {tree.map((node) => (
         <Node key={node.name} node={node} depth={0} />

@@ -250,6 +250,32 @@ google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/codegraph-debug
 Config lives in `~/.config/opencode/opencode.json`,
 `~/.free-pi/agent/mcp.json` and `~/.hermes/profiles/<profile>/config.yaml`.
 
+### Hooks: what fails automatically
+
+`.githooks/pre-commit` runs before every commit (`git config core.hooksPath
+.githooks`). No dependency, no Husky, no config file to drift — three scripts and
+the two gates that a commit genuinely must not break.
+
+| Hook | Fails on |
+| --- | --- |
+| `scripts/check/slop.mjs` | Gradients, Tailwind's default palette, glass/blur, shadows, emoji, eyebrows, `01/02/03` markers, and raw hex outside the token layer. Each finding prints the reason, not just the location. |
+| `scripts/check/design.mjs` | Type sizes off the twelve-step scale, bare `border` (resolves to `currentColor` in v4), spacing off the 4pt grid, and colour utilities that are not semantic tokens. |
+| `scripts/check/workflow.mjs` | A rules file pointing at a file that does not exist, `AGENTS.md` and `CLAUDE.md` disagreeing, a gap in `prompts/` numbering, and an unreadable commit subject. |
+| `npx tsc --noEmit`, `npx eslint . --quiet` | Types and lint. |
+
+Run them by hand with `pnpm check`, or one at a time with `pnpm check:slop`,
+`check:design`, `check:workflow`. All three accept a file list, so a single file
+can be checked while it is being written.
+
+The browser checks are deliberately **not** in the hook: `pnpm e2e` takes minutes
+and needs a dev server. A hook nobody can afford to wait for is a hook everyone
+passes with `--no-verify`. CI or a deliberate run is where those belong.
+
+Three exemptions exist and each is narrow and commented in the source: the token
+layer (`app/globals.css`) owns hex by definition, `app/opengraph-image.tsx`
+renders through Satori which has no CSS variables, and the hero globe keeps its
+radial gradient because it is the one sanctioned animation.
+
 ### The loop, in order
 
 1. **Measure.** A claim about performance, contrast or behaviour starts with a

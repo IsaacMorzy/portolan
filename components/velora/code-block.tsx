@@ -124,7 +124,7 @@ export function CodeBlock({
     <div
       {...props}
       data-slot="code-block"
-      className={cn("overflow-hidden rounded-xl border border-line bg-surface text-fg", className)}
+      className={cn("overflow-hidden rounded-xl border-line border-line bg-surface text-fg", className)}
     >
       <div className="flex min-h-11 items-center gap-2 border-b bg-raised/50 pr-2 pl-4">
         {tabs ? (
@@ -139,7 +139,7 @@ export function CodeBlock({
                 aria-controls={`${id}p`}
                 tabIndex={i == active ? 0 : -1}
                 onClick={() => setActive(i)}
-                className={cn("shrink-0 border-b-2 border-transparent px-2 font-mono text-xs text-fg-muted hover:text-fg focus-visible:ring-inset aria-selected:border-brand aria-selected:text-fg", ring)}
+                className={cn("shrink-0 border-b-2 border-transparent px-2 font-mono text-xs text-fg-muted hover:text-fg focus-visible:ring-inset aria-selected:border-accent aria-selected:text-fg", ring)}
               >
                 {t.name}
               </button>
@@ -148,7 +148,7 @@ export function CodeBlock({
         ) : (
           <span className="truncate font-mono text-xs text-fg-muted">{filename}</span>
         )}
-        <span className="ml-auto rounded-md border bg-canvas px-1.5 py-0.5 font-mono text-[11px] text-fg-muted uppercase">
+        <span className="ml-auto rounded-md border-line bg-canvas px-1.5 py-0.5 font-mono text-[11px] text-fg-muted uppercase">
           {lang}
         </span>
         <button

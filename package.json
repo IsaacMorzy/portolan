@@ -16,7 +16,11 @@
     "e2e": "node scripts/e2e/landing.mjs && node scripts/e2e/audit.mjs && node scripts/e2e/budget.mjs && node scripts/e2e/api-graph.mjs && node scripts/e2e/api-churn.mjs",
     "e2e:sign-in": "node --env-file=.env.local scripts/e2e/sign-in.mjs",
     "e2e:shots": "node scripts/e2e/screenshots.mjs",
-    "e2e:measure": "node scripts/e2e/measure.mjs"
+    "e2e:measure": "node scripts/e2e/measure.mjs",
+    "check": "node scripts/check/slop.mjs && node scripts/check/design.mjs && node scripts/check/workflow.mjs",
+    "check:slop": "node scripts/check/slop.mjs",
+    "check:design": "node scripts/check/design.mjs",
+    "check:workflow": "node scripts/check/workflow.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.7",

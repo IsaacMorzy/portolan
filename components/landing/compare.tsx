@@ -83,7 +83,7 @@ export function Compare() {
     <section id="compare" className="border-t border-line">
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-end md:gap-16">
-          <h2 className="max-w-[22ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+          <h2 className="max-w-[22ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
             Ten tools that draw something close, and where this one still loses
           </h2>
           <p className="max-w-[46ch] text-[0.9375rem] leading-relaxed text-fg-muted">

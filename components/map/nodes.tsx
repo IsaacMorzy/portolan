@@ -59,7 +59,7 @@ export function FoldedNodeView({ id, data }: NodeProps<FoldedNode>) {
       title={data.dir}
       onMouseEnter={() => hover({ kind: "group", id })}
       onMouseLeave={() => hover(null)}
-      className={`flex size-full cursor-pointer flex-col justify-center gap-[2px] rounded-[4px] border bg-surface ${
+      className={`flex size-full cursor-pointer flex-col justify-center gap-[2px] rounded-[4px] border-line bg-surface ${
         isHovered ? "border-accent" : "border-line"
       } ${dim ? DIM : ""}`}
       style={{ paddingInline: PAD_X }}
@@ -108,7 +108,7 @@ export function PanelNodeView({ id, data }: NodeProps<PanelNode>) {
 
   return (
     <div
-      className={`flex size-full flex-col overflow-hidden rounded-[4px] border bg-surface ${
+      className={`flex size-full flex-col overflow-hidden rounded-[4px] border-line bg-surface ${
         selected ? "border-accent" : "border-fg-muted"
       } ${anyLit ? "" : DIM}`}
     >
@@ -202,7 +202,7 @@ function OffscreenRow(props: {
         type="button"
         onClick={props.onClick}
         disabled={props.count === 0}
-        className={`flex size-full items-center text-left text-[10px] text-fg-muted tabular-nums enabled:hover:bg-raised enabled:hover:text-fg disabled:opacity-50 ${
+        className={`flex size-full items-center text-left text-[11px] text-fg-muted tabular-nums enabled:hover:bg-raised enabled:hover:text-fg disabled:opacity-50 ${
           props.hovered ? HOVER_RING : props.dim ? DIM : ""
         }`}
         style={{ paddingInline: PAD_X }}
@@ -224,7 +224,7 @@ function Meta(props: {
 }) {
   const { fileCount, fanIn, fanOut, match } = props;
   return (
-    <span className="flex items-center gap-[8px] text-[10px] leading-[12px] text-fg-muted tabular-nums">
+    <span className="flex items-center gap-[8px] text-[11px] leading-[12px] text-fg-muted tabular-nums">
       {match ? (
         <span className="flex items-center gap-[4px]" title={`${match.count} of ${fileCount} files match`}>
           <span>
@@ -245,7 +245,7 @@ function Meta(props: {
 // direction ever gets.
 function Fan({ fanIn, fanOut }: { fanIn: number; fanOut: number }) {
   return (
-    <span className="flex shrink-0 items-center gap-[6px] text-[10px] tabular-nums">
+    <span className="flex shrink-0 items-center gap-[6px] text-[11px] tabular-nums">
       <span className="text-incoming" title="Distinct files that import this">
         ←{fanIn}
       </span>

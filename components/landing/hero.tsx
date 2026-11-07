@@ -82,7 +82,7 @@ export function Hero() {
         </div>
       </div>
 
-      <figure className="mt-14 overflow-hidden rounded border border-line bg-surface">
+      <figure className="mt-14 overflow-hidden rounded border-line border-line bg-surface">
         <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           <div className="min-w-0 border-b border-line md:border-b-0 md:border-r">
             <CodeBlock

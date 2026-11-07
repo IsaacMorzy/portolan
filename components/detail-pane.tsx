@@ -291,7 +291,7 @@ function InsightSection<T>(props: {
         <button
           type="button"
           onClick={() => setAll(!all)}
-          className="px-3 pt-0.5 text-[10px] text-fg-muted tabular-nums hover:text-fg hover:underline"
+          className="px-3 pt-0.5 text-[11px] text-fg-muted tabular-nums hover:text-fg hover:underline"
         >
           {all ? "Show fewer" : `Show all ${props.items.length}`}
         </button>
@@ -304,7 +304,7 @@ function InsightSection<T>(props: {
 function CycleRows({ cycle, paths }: { cycle: Cycle; paths: PathActions }) {
   return (
     <li className="mt-1">
-      <p className="px-3 text-[10px] text-fg-muted tabular-nums">
+      <p className="px-3 text-[11px] text-fg-muted tabular-nums">
         {cycle.files.length} {cycle.files.length === 1 ? "file" : "files"}
         {cycle.members > cycle.files.length && `, one loop among ${cycle.members} files that all reach each other`}
       </p>
@@ -327,7 +327,7 @@ function Count({ label, value, note, title }: { label: string; value: number | n
     <div className="border-r border-line px-3 py-2 last:border-r-0" title={title}>
       <dt className="text-[11px] text-fg-muted">{label}</dt>
       <dd className="text-[15px] leading-5 tabular-nums">{value ?? <span className="text-fg-muted">—</span>}</dd>
-      {note && <dd className="text-[10px] text-fg-muted tabular-nums">{note}</dd>}
+      {note && <dd className="text-[11px] text-fg-muted tabular-nums">{note}</dd>}
     </div>
   );
 }
@@ -357,7 +357,7 @@ function RankedList(props: {
         </ul>
       )}
       {total > files.length && (
-        <p className="px-3 pt-0.5 text-[10px] text-fg-muted tabular-nums">{total - files.length} more not listed</p>
+        <p className="px-3 pt-0.5 text-[11px] text-fg-muted tabular-nums">{total - files.length} more not listed</p>
       )}
     </section>
   );
@@ -376,7 +376,7 @@ function Selected(props: {
   return (
     <div className="pb-3">
       <header className="border-b border-line px-3 pt-2">
-        <p className="text-[10px] text-fg-muted">{props.caption}</p>
+        <p className="text-[11px] text-fg-muted">{props.caption}</p>
         <h2 className="leading-4">{props.title}</h2>
         <div role="tablist" className="mt-2 flex gap-3 text-[11px]">
           <TabButton tab="structure" label="Structure" current={props.tab} onTab={props.onTab} />
@@ -506,7 +506,7 @@ function WalkButton(props: {
       type="button"
       aria-pressed={on}
       onClick={() => props.onWalk(on ? null : props.direction)}
-      className={`rounded-[3px] border px-2 py-0.5 text-[11px] ${
+      className={`rounded-[3px] border-line px-2 py-0.5 text-[11px] ${
         on ? "border-accent bg-accent/15 text-fg" : "border-line text-fg-muted hover:bg-raised hover:text-fg"
       }`}
     >
@@ -529,7 +529,7 @@ function ReachList({ file, graph, direction, paths }: { file: string; graph: Adj
       </h3>
       {steps.map((list, i) => (
         <div key={i}>
-          <h4 className="px-3 pt-1 text-[10px] text-fg-muted tabular-nums">
+          <h4 className="px-3 pt-1 text-[11px] text-fg-muted tabular-nums">
             {i + 1} {i === 0 ? "step" : "steps"} away · {list.length}
           </h4>
           {list.length === 0 ? (
@@ -543,7 +543,7 @@ function ReachList({ file, graph, direction, paths }: { file: string; graph: Adj
           )}
         </div>
       ))}
-      <p className="px-3 pt-1 text-[10px] text-fg-muted tabular-nums">
+      <p className="px-3 pt-1 text-[11px] text-fg-muted tabular-nums">
         {beyond > 0 ? `${beyond} more further than ${DEFAULT_DEPTH} steps, not listed.` : `Nothing further than ${DEFAULT_DEPTH} steps.`}
       </p>
     </section>
@@ -663,7 +663,7 @@ function PathRow({ path, paths, trailing }: { path: string; paths: PathActions; 
           {slash >= 0 && <span className="truncate text-fg-muted">{path.slice(0, slash + 1)}</span>}
           <span className="shrink-0">{path.slice(slash + 1)}</span>
         </span>
-        {trailing && <span className="shrink-0 text-[10px] tabular-nums">{trailing}</span>}
+        {trailing && <span className="shrink-0 text-[11px] tabular-nums">{trailing}</span>}
       </button>
     </li>
   );

@@ -207,6 +207,9 @@ Not by review, because review only sees what gets reviewed.
 | `scripts/e2e/landing.mjs` — 390px horizontal overflow | mobile-only collapse |
 | `scripts/e2e/audit.mjs` — status, one `h1`, named controls, description length | soft 404s and unlabelled controls |
 | `scripts/e2e/screenshots.mjs` + a vision pass | "passes the numbers, looks wrong" |
+| `scripts/check/design.mjs` — off-scale sizes, bare `border`, off-grid spacing, non-token colours | drift in source, before it reaches a browser |
+| `scripts/check/slop.mjs` — gradients, default palette, glass, shadows, emoji, eyebrows | the §8 list, mechanically |
+| `.githooks/pre-commit` | all of the above, on every commit |
 
 When a defect escapes, **add a check**. A note in this file is not enforcement —
 this file is already the note that the last defect ignored.

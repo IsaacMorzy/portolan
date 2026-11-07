@@ -30,7 +30,7 @@ export function Value() {
   return (
     <section className="border-t border-line bg-raised/40">
       <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-        <h2 className="max-w-[46ch] text-[1.375rem] leading-[1.25] font-semibold tracking-[-0.02em] text-balance md:text-[1.625rem]">
+        <h2 className="max-w-[46ch] text-[1.25rem] leading-[1.25] font-semibold tracking-[-0.02em] text-balance md:text-[1.625rem]">
           Most tools guess at your architecture. This one reads it.
         </h2>
 

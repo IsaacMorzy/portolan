@@ -44,7 +44,7 @@ export function RouteTable({
       ) : (
         <table className="w-full border-collapse">
           <thead className="sticky top-0 bg-surface">
-            <tr className="h-[22px] border-b border-line text-left text-[10px] text-fg-muted">
+            <tr className="h-[22px] border-b border-line text-left text-[11px] text-fg-muted">
               <th className="w-16 px-3 font-normal">Method</th>
               <th className="px-3 font-normal">Pattern</th>
               <th className="px-3 font-normal">Declared in</th>

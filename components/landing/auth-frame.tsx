@@ -33,7 +33,7 @@ export function AuthFrame({
 
       <main className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-12 px-6 py-12 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
         <div>
-          <h1 className="max-w-[18ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.025em] text-balance md:text-[2.25rem]">
+          <h1 className="max-w-[18ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.025em] text-balance md:text-[2rem]">
             {title}
           </h1>
           <p className="mt-4 max-w-[40ch] text-[0.9375rem] leading-relaxed text-fg-muted">{body}</p>

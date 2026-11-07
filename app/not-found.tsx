@@ -31,7 +31,7 @@ export default function NotFound() {
           </Link>
           <Link
             href="/"
-            className="inline-flex h-8 items-center rounded border border-line px-4 text-xs text-fg transition-colors hover:bg-raised"
+            className="inline-flex h-8 items-center rounded border-line border-line px-4 text-xs text-fg transition-colors hover:bg-raised"
           >
             Back to the site
           </Link>
