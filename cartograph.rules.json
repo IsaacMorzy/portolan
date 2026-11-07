@@ -1,0 +1,27 @@
+{
+  "deny": [
+    {
+      "from": "lib/parser",
+      "to": "lib/ai",
+      "why": "the parser resolves imports; it must never depend on a model"
+    },
+    {
+      "from": "lib",
+      "to": "app",
+      "why": "library code must not import a route: the dependency runs the other way"
+    }
+  ],
+  "allow": [
+    {
+      "to": "lib/parser/types.ts",
+      "from": [
+        "app",
+        "components",
+        "lib",
+        "scripts",
+        "tests"
+      ],
+      "why": "the shared edge type is imported by everything, by design"
+    }
+  ]
+}
