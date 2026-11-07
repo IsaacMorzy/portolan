@@ -249,11 +249,16 @@ function CentreTab({ label, count, on, onClick }: { label: string; count?: numbe
       type="button"
       role="tab"
       aria-selected={on}
+      /* The margin separates the count visually, but a text node with no space
+         between the two runs reads as "Routes2" — visually spaced and audibly
+         glued. The count stays in the name on purpose: "Routes, 2 results" is
+         what the badge means, so hiding it from assistive tech would lose it. */
+      aria-label={count === undefined ? label : `${label}, ${count} ${count === 1 ? "result" : "results"}`}
       onClick={onClick}
       className={`-mb-px border-b pb-1.5 ${on ? "border-accent text-fg" : "border-transparent text-fg-muted hover:text-fg"}`}
     >
-      {label}
-      {count !== undefined && <span className="ml-1 text-fg-muted tabular-nums">{count}</span>}
+      {label}{" "}
+      {count !== undefined && <span aria-hidden="true" className="ml-1 text-fg-muted tabular-nums">{count}</span>}
     </button>
   );
 }
