@@ -33,7 +33,9 @@ import {
 } from "./nodes";
 
 const nodeTypes: NodeTypes = { folded: FoldedNodeView, panel: PanelNodeView };
-const FIT_PADDING = 0.06;
+// Fit is re-run on resize, so padding is a margin rather than a compensation for
+// a container measured before the graph existed.
+const FIT_PADDING = 0.12;
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 2;
 /** Initial fit may enlarge a small graph a little, never to poster size. */
@@ -166,8 +168,30 @@ function MapCanvas({
     [selection, lit, hovered, focus, category],
   );
 
+  // React Flow fits once, when it mounts, and the canvas is not always at its
+  // final size then — a tab that becomes visible, a pane that gets wider. The
+  // instance is kept so the same fit can run again when the box actually changes,
+  // which is what makes "fills the canvas" true rather than true-once.
+  const canvas = useRef<HTMLDivElement | null>(null);
+  const instance = useRef<{ fitView: (o?: { padding?: number; maxZoom?: number }) => void } | null>(null);
+  useEffect(() => {
+    const el = canvas.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let last = el.clientWidth;
+    const ro = new ResizeObserver(() => {
+      // Width only: heights change constantly as nodes fold, and re-fitting on
+      // those would move the map while somebody is reading it.
+      if (el.clientWidth === last) return;
+      last = el.clientWidth;
+      instance.current?.fitView({ padding: FIT_PADDING, maxZoom: INITIAL_MAX_ZOOM });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <MapActions.Provider value={actions}>
+      <div ref={canvas} className="h-full w-full">
       <MapSelection.Provider value={selectionValue}>
         <ReactFlow
           nodes={nodes}
@@ -182,6 +206,9 @@ function MapCanvas({
           maxZoom={MAX_ZOOM}
           fitView
           fitViewOptions={{ padding: FIT_PADDING, maxZoom: INITIAL_MAX_ZOOM }}
+          onInit={(inst) => {
+            instance.current = inst as unknown as { fitView: (o?: { padding?: number; maxZoom?: number }) => void };
+          }}
           // Folded nodes open here. Panels handle their own header and row
           // clicks, which bubble up to this too and are ignored.
           onNodeClick={(_, node) => {
@@ -190,6 +217,7 @@ function MapCanvas({
           onPaneClick={onDeselect}
         />
       </MapSelection.Provider>
+      </div>
     </MapActions.Provider>
   );
 }
