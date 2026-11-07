@@ -44,3 +44,13 @@ and it is only worth writing if it changes a check.
 - The map's label size is below comfortable reading at 960px. Whether that is a
   type-scale problem or a zoom-detail problem is unmeasured — hence prompt 0006
   keeping it out of scope.
+
+## Added after #36
+
+| Learned | Mechanism | Action taken |
+| --- | --- | --- |
+| A library's defaults are invisible to a repo-wide grep | the pale edge was React Flow's `#b1b1b7`, never present in this repo — grepping for hex could not find it | the check is "what does the library draw that we did not ask for", recorded in prompt 0007's step 4 |
+| A number from one screenshot is not a property of the screen | "90% × 85%" came from one image; the dark shot showed 90% × 30% and it was right | vision questions now ask for width and height separately |
+| Raising a token is not raising contrast | applying `--edge` was correct and still unreadable; the token itself was 2.56:1 | measure the pair before the change, not after |
+| A blocked action names its own prerequisite | `bsk step` needs the context from `bsk cooperate sync`; `--context CURRENT` is a different, rejected context | sync first, then act, then verify the state changed (the radio did not move on the first attempt and I nearly reported a dark screenshot of a light page) |
+| Parsed data beats a second implementation | `ParsedFile.role` already held the answer; recomputing roles in a script would have measured a copy | `scripts/unclassified.ts` reads the product's own output |
