@@ -133,8 +133,10 @@ function MapCanvas({
           style: {
             // Thickness says how many imports one line stands for, gently. The
             // floor is not zero: a one-import edge still has to be a line you can
-            // follow, and at 0.75px it read as texture rather than as an edge.
-            strokeWidth: Math.max(1.15, Math.min(2.5, 0.75 + Math.log2(e.count) / 3)),
+            // follow. Measured twice by looking — 0.75px read as texture, 1.15px
+            // still disappeared among crossings in dark mode — so the floor is
+            // now 1.6 and the ceiling rises with it, keeping the ratio.
+            strokeWidth: Math.max(1.6, Math.min(3, 1 + Math.log2(e.count) / 3)),
             // React Flow's default edge colour is a hard-coded grey that knows
             // nothing about the theme. An edge with no selection on it is a
             // normal edge, so it gets the token rather than the library's idea

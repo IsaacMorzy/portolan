@@ -65,7 +65,7 @@ export function FoldedNodeView({ id, data }: NodeProps<FoldedNode>) {
       style={{ paddingInline: PAD_X }}
     >
       <Handle type="target" position={Position.Left} className={anchor} isConnectable={false} />
-      <span className="truncate font-mono text-[11px] leading-[16px] text-fg">{data.label}</span>
+      <span className="truncate font-mono text-xs leading-4 text-fg">{data.label}</span>
       <Meta
         fileCount={data.fileCount}
         fanIn={data.fanIn}
@@ -123,7 +123,7 @@ export function PanelNodeView({ id, data }: NodeProps<PanelNode>) {
         }`}
         style={{ height: PANEL_HEADER_HEIGHT, paddingInline: PAD_X }}
       >
-        <span className="truncate font-mono text-[11px] leading-[16px] font-semibold text-fg">{data.label}</span>
+        <span className="truncate font-mono text-xs leading-4 font-semibold text-fg">{data.label}</span>
         <Meta
           fileCount={data.fileCount}
           fanIn={data.fanIn}
