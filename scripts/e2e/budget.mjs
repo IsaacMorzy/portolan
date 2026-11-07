@@ -163,6 +163,25 @@ const darkContrast = await page.evaluate(() => {
   }
   return { count: bad.length, bad: bad.slice(0, 3), theme: document.documentElement.dataset.theme ?? "?" };
 });
+// The type scale (docs/design-system.md §4). Twelve sizes exist; a thirteenth is
+// a design decision, not a `text-[19px]` typed at 1am. This has to be read from
+// the browser rather than grepped from source, because Tailwind resolves rem
+// against a page-level font-size the source never mentions.
+const SCALE = [11, 12, 13, 14, 15, 17, 20, 26, 32, 40, 56, 80];
+const drift = (sizes) =>
+  [...new Set(sizes.map((s) => Math.round(Number(s.replace("px", "")))))].filter((px) => !SCALE.includes(px));
+
+const lightSizes = await page.evaluate(() => {
+  const out = [];
+  for (const el of document.querySelectorAll("body *")) {
+    if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+    out.push(getComputedStyle(el).fontSize);
+  }
+  return out;
+});
+const lightDrift = drift(lightSizes);
+check("every rendered type size is on the scale", lightDrift.length === 0, lightDrift.join("px, ") + (lightDrift.length ? "px — not in docs/design-system.md §4" : "none"));
+
 check("and in dark, where the failures actually were", darkContrast.count === 0, `${darkContrast.theme}: ${darkContrast.bad.join(" | ") || "none"}`);
 
 // A page that is 200 while everything it needs is 404 is a page that is broken

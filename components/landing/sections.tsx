@@ -257,7 +257,7 @@ export function Close({ signedIn }: { signedIn: boolean }) {
     <section className="border-t border-line">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-24 md:grid-cols-[minmax(0,1fr)_300px] md:py-32">
         <div>
-          <h2 className="max-w-[24ch] text-[2rem] leading-[1.08] font-semibold tracking-[-0.03em] text-balance md:text-[2.75rem]">
+          <h2 className="max-w-[24ch] text-[2rem] leading-[1.08] font-semibold tracking-[-0.03em] text-balance md:text-[2.5rem]">
             Find out what breaks before you change it
           </h2>
           <p className="mt-5 max-w-[44ch] text-[0.9375rem] leading-relaxed text-fg-muted">

@@ -119,6 +119,62 @@ entry below is a real escape from this repo and the rule it produced:
 - **Close the loop.** A ticket closed with a commit sha, or left open with a
   named blocker. Never a silent drop.
 
+## Design system
+
+**`docs/design-system.md` is the source of truth.** Read it before changing any
+surface. It is short because it is rules, not examples.
+
+The three things most likely to bite:
+
+1. **Two densities, one token base.** Marketing (`/`, `/security`) runs 96-128px
+   between sections and headlines up to 80px. Product (`/dashboard`,
+   `/analyses/:id`) runs 16-24px and never exceeds 32px. A product screen never
+   borrows a marketing size; an 11px label on a marketing page is the same
+   mistake in reverse.
+2. **Twelve type sizes, and no thirteenth.** 11, 12, 13, 14, 15, 17, 20, 26, 32,
+   40, 56, 80. `budget.mjs` reads every rendered size from the browser and fails
+   on anything else, because Tailwind resolves `rem` against a page font-size the
+   source never mentions. Adding a size is a design decision, not a typo fix.
+3. **Semantic tokens only.** `canvas surface raised line fg fg-muted accent
+   accent-fg incoming outgoing kind-1..4 edge`. A raw hex in a component cannot
+   be reached by the theme, so it breaks in one mode and nobody notices — which
+   is exactly how white-on-accent shipped at 3.25:1 in dark until the contrast
+   check caught it.
+
+### Working with TypeUI
+
+Vendored, MIT, offline: `.agents/skills/typeui-fundamentals/` (4,267 lines of
+type, spacing, UI, UX and accessibility reasoning). Load it when a design
+question is genuinely undecided and `docs/design-system.md` is silent. When the
+two disagree the repo wins — and that disagreement is a bug in one of them, so
+say which rather than quietly picking.
+
+The MCP (`https://mcp.typeui.sh`) is configured **disabled** in all three clients
+— opencode, pi, hermes — because it is hosted and needs an API key or sign-in
+that only you can provide. Flip `enabled` in your client config if you want it.
+The vendored skill covers the same ground without a network call, which is why it
+is the default path here.
+
+The CLI is a design-system *generator* — it emits a `SKILL.md` for a stack from a
+prompt or a preset:
+
+```bash
+npx -y typeui.sh@latest list                 # presets
+npx -y typeui.sh@latest pull <slug>          # write one into .agents/skills/
+npx -y typeui.sh@latest generate             # answer prompts, emit a skill
+```
+
+Use `pull` when you want a starting point for a *new* surface or a different
+product. Do not regenerate this project's system — it is hand-built around the
+tokens in `app/globals.css` and the measured scale, and a generated one would
+trade that for generic defaults.
+
+### When a design defect escapes
+
+Add a check, then a line in `docs/design-system.md`. In that order. The doc
+already contains the rules the last three defects broke; what caught them was
+`scripts/e2e/budget.mjs`. Prose is not enforcement.
+
 ## Tooling: what is wired, and when to reach for it
 
 Every row was used on this repository, not copied from a list. If a tool is not
@@ -139,6 +195,10 @@ context budget on instructions nobody reads. These are the ones that earn it:
 | `wayfinder` + `to-tickets` | Splitting a request too big for one commit. Produces the map and the children. |
 | `web-quality-audit` | Performance, a11y, SEO sweeps. |
 | `code-review` | Before merging anything non-trivial. |
+| `typeui-fundamentals` | Deliberately undecided design questions — hierarchy, spacing intent, type scale reasoning, WCAG interpretation. Vendored in `.agents/skills/typeui-fundamentals/` (MIT), so it works offline. **`docs/design-system.md` wins on every concrete value**; this skill supplies the reasoning when the doc is silent. |
+
+Skills are cheap to install and expensive to load. If a task matches nothing in
+that table, do it without a skill and write down what you learned.
 
 ### CLI
 
@@ -162,6 +222,7 @@ One browser driver is live; the rest sit disabled until the task needs them.
 | `chrome-devtools` | on | DOM, console, network and performance over the DevTools protocol. |
 | `clerk` | on (remote) | Instance config, users, domains. Read-only in practice. |
 | `httpstatus` | off | SSL, CORS, redirect chains, HAR. Off because it wants an API key; a server that 401s every call is worse than one that is visibly off. |
+| `typeui` | off | Hosted design-system MCP at `https://mcp.typeui.sh`. Configured in all three clients, disabled because it needs a key or sign-in only the account owner can supply. The vendored skill covers the same ground offline. |
 | `puppeteer`, `playwright` | off | Third and fourth browser drivers. They were already in the global config; three drivers for one job is how you get three answers. |
 
 Refused, with reasons: **`x64dbgMCP`** debugs Windows native binaries and this is

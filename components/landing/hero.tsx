@@ -144,7 +144,7 @@ export function Hero() {
                     x={n.x + 10}
                     y={n.y + H / 2}
                     dominantBaseline="central"
-                    className="fill-fg font-mono text-[9px]"
+                    className="fill-fg font-mono text-[11px]"
                   >
                     {n.label}
                   </text>
