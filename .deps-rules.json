@@ -1,0 +1,19 @@
+{
+  "deny": [
+    {
+      "from": "lib",
+      "to": "app",
+      "why": "a library must not reach into routes or server actions"
+    },
+    {
+      "from": "lib",
+      "to": "components",
+      "why": "the graph and parser are UI-free; rendering belongs above them"
+    },
+    {
+      "from": "lib/parser",
+      "to": "lib/supabase",
+      "why": "parsing is pure; storage is a caller's problem"
+    }
+  ]
+}

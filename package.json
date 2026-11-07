@@ -25,7 +25,8 @@
     "check:guards": "node scripts/check/guards.mjs",
     "check:bar": "node scripts/check/bar.mjs",
     "gate": "sh scripts/gate.sh",
-    "gate:full": "sh scripts/gate.sh --full"
+    "gate:full": "sh scripts/gate.sh --full",
+    "rules": "node --experimental-strip-types scripts/deps-rules.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.7",

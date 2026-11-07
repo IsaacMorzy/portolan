@@ -1,5 +1,6 @@
 /**
- * Where this tool loses.
+ * Two lists about the same ten tools: what this shares with the field, and where
+ * it still loses.
  *
  * This section used to be a ten-row table of competitors with their published
  * prices. Ponytail's first rung applies: it does not need to exist. Prices move,
@@ -11,11 +12,37 @@
  * What survives is the part with information in it: the four things another tool
  * does better, stated flatly, with no pricing and no "closest competitor" badge.
  * A reader who needs one of these four should use that tool, and the page says so.
+ *
+ * The lists are data, not prose, because the section has to survive the product
+ * moving. When a lane ships (#43 holds them), one entry changes and the row moves
+ * from LOSSES to SHARED — the copy is not re-argued by hand. A comparison edited
+ * by hand after each release is a comparison that will be wrong for a while.
  */
+
+// Overlapping capability, with the mechanism that makes it true here. "Similar"
+// without a mechanism is a word doing the work of a fact.
+const SHARED = [
+  {
+    what: "A resolved import graph",
+    how: "Madge, dependency-cruiser and Nx all resolve imports rather than guess them, and so does this: an edge exists only when a file exists and a parser read the import.",
+  },
+  {
+    what: "Circular imports, named",
+    how: "A cycle comes back as the list of files in it, in order, so you can open the first one rather than read a warning symbol.",
+  },
+  {
+    what: "Free on public repositories",
+    how: "No card and no trial for a public repo — the same terms Madge, GitDiagram and Emerge offer, because a map of public code is not the scarce thing.",
+  },
+  {
+    what: "An output you can send to somebody",
+    how: "A page with a URL you can paste in a review thread, the way these tools export a diagram or a CLI prints a graph.",
+  },
+];
 const LOSSES = [
   {
     tool: "dependency-cruiser",
-    better: "It can fail your CI on a rule. This product has no rule enforcement at all — it shows you the dependency, and you decide.",
+    better: "It can fail your CI on a rule. The product still has no rule enforcement — its map shows you the dependency and you decide. This repository has a runner of its own, scripts/deps-rules.ts, which is not the same as a feature.",
   },
   {
     tool: "Sourcegraph",
@@ -36,26 +63,40 @@ export function Compare() {
     <section id="compare" className="scroll-mt-16 border-t border-line">
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-end md:gap-16">
-          <h2 className="max-w-[20ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
-            Four things other tools do better
+          <h2 className="max-w-[24ch] text-[1.625rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
+            What it shares with these tools, and where it still loses
           </h2>
           <p className="max-w-[46ch] text-[0.9375rem] leading-relaxed text-fg-muted">
-            Written down on purpose. If one of these is what you need, that tool is the right answer — this page is not
-            going to pretend otherwise.
+            Four claims the field already makes, and four things it does better. If one of the second list is what you
+            need, that tool is the right answer — this page is not going to pretend otherwise.
           </p>
         </div>
 
-        <dl className="mt-10 border-t border-line">
-          {LOSSES.map((loss) => (
-            <div
-              key={loss.tool}
-              className="grid gap-2 border-b border-line py-5 md:grid-cols-[11rem_minmax(0,1fr)] md:items-baseline md:gap-8"
-            >
-              <dt className="text-[0.875rem] font-medium text-fg">{loss.tool}</dt>
-              <dd className="max-w-[62ch] text-[0.875rem] leading-relaxed text-fg-muted">{loss.better}</dd>
-            </div>
-          ))}
-        </dl>
+        <div className="mt-12 grid gap-12 md:grid-cols-2 md:gap-16">
+          <div>
+            <h3 className="text-[0.8125rem] font-medium tracking-wide text-fg-muted">Shared with the field</h3>
+            <dl className="mt-4 border-t border-line">
+              {SHARED.map((item) => (
+                <div key={item.what} className="border-b border-line py-4">
+                  <dt className="text-[0.9375rem] font-medium text-fg">{item.what}</dt>
+                  <dd className="mt-1 max-w-[52ch] text-[0.875rem] leading-relaxed text-fg-muted">{item.how}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <div>
+            <h3 className="text-[0.8125rem] font-medium tracking-wide text-fg-muted">Still theirs</h3>
+            <dl className="mt-4 border-t border-line">
+              {LOSSES.map((loss) => (
+                <div key={loss.tool} className="border-b border-line py-4">
+                  <dt className="text-[0.9375rem] font-medium text-fg">{loss.tool}</dt>
+                  <dd className="mt-1 max-w-[52ch] text-[0.875rem] leading-relaxed text-fg-muted">{loss.better}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
 
         <p className="mt-8 max-w-[62ch] text-[0.875rem] leading-relaxed text-fg">
           What none of them do is the combination this page argues for: a graph resolved by a parser rather than inferred,

@@ -42,6 +42,12 @@ else
   node scripts/check/workflow.mjs --staged
 fi
 
+# Boundary rules: the one check that can fail on an architectural decision rather
+# than on a style. It runs over the same parser the product uses, so a rule that
+# holds here holds on the map the product draws.
+printf '==> deps-rules\n'
+node --experimental-strip-types scripts/deps-rules.ts
+
 # PageProps and LayoutProps are generated, not written by anyone: Next emits them
 # (and next-env.d.ts, which is gitignored) from the route tree. A checkout that
 # has never run a build therefore has no such globals, and tsc fails on three
