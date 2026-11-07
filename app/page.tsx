@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Hero } from "@/components/landing/hero";
@@ -42,7 +43,7 @@ export default async function LandingPage() {
     description:
       "Parses TypeScript, JavaScript and Python into a map of modules and the imports between them, then explains each one using only the code it read.",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-    url: "https://codegraph-navy.vercel.app/",
+    url: `${SITE_URL}/`,
   };
 
   return (

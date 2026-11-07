@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { SITE_URL } from "@/lib/site";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { resolveOrganization } from "@/app/start/actions.ts";
@@ -49,7 +50,7 @@ export async function GET() {
     maxAge: 600,
   });
 
-  const origin = process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://codegraph-navy.vercel.app";
+  const origin = SITE_URL;
   const manifest = appManifest(
     { redirectUrl: `${origin}/api/github/app/callback`, setupUrl: `${origin}/dashboard?installed=1` },
     "portolan",

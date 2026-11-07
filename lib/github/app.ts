@@ -1,4 +1,5 @@
 // G1 (#27): read private repositories, without asking anyone for a personal
+import { SITE_URL } from "../site.ts";
 // access token.
 //
 // The three ways to get at a private repository are a PAT, an OAuth app, and a
@@ -33,7 +34,7 @@ export type ManifestTarget = {
 export function appManifest(target: ManifestTarget, name: string) {
   return {
     name,
-    url: "https://codegraph-navy.vercel.app",
+    url: SITE_URL,
     // No webhook endpoint yet. Declaring one that does not exist means GitHub
     // retries a failing delivery forever, so the permission is asked for when the
     // endpoint exists — see #27.

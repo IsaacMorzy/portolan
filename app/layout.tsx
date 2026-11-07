@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme";
@@ -26,7 +27,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   // metadataBase makes every relative URL below absolute; without it Next warns
   // and social cards resolve against localhost.
-  metadataBase: new URL("https://codegraph-navy.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   title: "Portolan",
   // 45 characters was a label, not a description: it said what the category is
   // without saying what the reader gets. scripts/e2e/audit.mjs fails a page
