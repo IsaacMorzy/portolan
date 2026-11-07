@@ -302,6 +302,12 @@ and a build with no environment at all). The workflow is a YAML shim and nothing
 more, because two copies of the same list drift and the copy nobody runs is always
 the stale one.
 
+The gate runs `next typegen` before `tsc`, because `PageProps` and `LayoutProps`
+are generated from the route tree and `next-env.d.ts` is gitignored — a fresh
+checkout has no such globals, so types fail on files that are perfectly fine in a
+terminal where `dev` has run. Generating them is the fix; committing a generated
+file is not.
+
 Run it by hand with `pnpm gate` (`pnpm gate:full` for the CI tail), or one check at
 a time with `pnpm check:secrets`,
 `check:guards`, `check:slop`, `check:design`, `check:bar`, `check:workflow`.

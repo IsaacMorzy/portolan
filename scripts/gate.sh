@@ -42,6 +42,14 @@ else
   node scripts/check/workflow.mjs --staged
 fi
 
+# PageProps and LayoutProps are generated, not written by anyone: Next emits them
+# (and next-env.d.ts, which is gitignored) from the route tree. A checkout that
+# has never run a build therefore has no such globals, and tsc fails on three
+# pages that compile perfectly well in the terminal of whoever just used dev.
+# Generating them is the fix; committing a generated file is not.
+printf '==> typegen\n'
+npx next typegen >/dev/null
+
 printf '==> types\n'
 npx tsc --noEmit
 
