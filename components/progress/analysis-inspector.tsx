@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CodeBlock } from "@/components/velora/code-block";
 import { StateMark } from "@/components/state-mark";
 import { STALE_AFTER_MS } from "@/lib/pipeline/stages";
 import type { RowData } from "./analysis-row";
@@ -66,6 +67,29 @@ export function AnalysisInspector({ row, onClose }: { row: RowData; onClose: () 
             ? `No progress for over ${STALE_AFTER_MS / 60000} minutes — ${note}`
             : note}
         </p>
+      )}
+
+      {/* A failed run's message is the one thing here that is machine output:
+          newlines that mean something, a stack, a URL. It gets a code block so
+          that it can be read and copied; a paragraph would re-wrap it into
+          something that looks like prose and cannot be pasted anywhere. */}
+      {row.progress.status === "failed" && note && (
+        <div className="px-3 pb-3">
+          {/* No `language`: the message is machine output, not bash, and the
+              header would otherwise label it as a language it is not. */}
+          <CodeBlock code={note} filename="failure" lineNumbers={false} />
+        </div>
+      )}
+
+      {row.repository && row.progress.status === "complete" && (
+        <div className="px-3 pb-3">
+          <CodeBlock
+            code={`npx cartograph tour . --mode surface`}
+            language="bash"
+            filename="the same graph, from a terminal"
+            lineNumbers={false}
+          />
+        </div>
       )}
     </section>
   );

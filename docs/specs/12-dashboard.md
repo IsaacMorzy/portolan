@@ -128,7 +128,14 @@ Not opinions — the four things that can be checked:
    on the row as its accessible name — the repository name is a real `<button>`, so
    the action is reachable by keyboard and announces itself, while its clicks bubble
    to the row so mouse and Enter do the same thing rather than two things.
-2. `code-block` for failure detail and the CLI line.
+2. ~~`code-block` for failure detail and the CLI line.~~ **Shipped.** A failed
+   run's message is the only machine output on the screen — newlines that mean
+   something, a URL, sometimes a stack — so it gets a code block that can be read
+   and copied; as a paragraph it re-wraps into something that looks like prose and
+   cannot be pasted anywhere. The CLI line appears only for a completed analysis,
+   because telling somebody how to reproduce a run that failed at fetch is noise.
+   Caught by looking: the first version passed `language="bash"` purely to suppress
+   highlighting, which labelled a GitHub error as bash in the block's own header.
 3. `file-tree` in the empty state.
 4. Strip tally refined to the twelve sizes and the 28px row rhythm.
 5. Anything else, only after the four above pass §5.
