@@ -4,6 +4,7 @@
  */
 import assert from "node:assert/strict";
 import test from "node:test";
+import { totalCommits } from "../lib/graph/churn.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -104,4 +105,33 @@ test("an import turning type-only is a change even though both ends stayed", () 
   const d = diffEdges([edge("a", "b")], [edge("a", "b", true)]);
   assert.equal(d.added.length, 1);
   assert.equal(d.removed.length, 1);
+});
+
+// --- G4 (#26) churn: the Link header is the whole trick ---------------------
+//
+// One request per file instead of a paginated walk, and the total comes from
+// the page number of rel="last". Getting that arithmetic wrong reports 1
+// commit for a file that has 400, which reads as "nobody touches this" — the
+// exact opposite of the truth.
+
+test("churn reads the total commit count from the Link header", () => {
+  const link =
+    '<https://api.github.com/repositories/1/commits?path=a.ts&per_page=1&page=2>; rel="next", ' +
+    '<https://api.github.com/repositories/1/commits?path=a.ts&per_page=1&page=412>; rel="last"';
+  assert.equal(totalCommits(link), 412);
+});
+
+test("churn reads the last page even when it comes first", () => {
+  const link = '<https://x/commits?path=a&per_page=1&page=7>; rel="last", <https://x/commits?path=a&per_page=1&page=1>; rel="prev"';
+  assert.equal(totalCommits(link), 7);
+});
+
+test("churn treats a missing Link header as one page, not as zero", () => {
+  // A repository with fewer commits than the page size sends no Link at all.
+  assert.equal(totalCommits(null), null);
+  assert.equal(totalCommits(""), null);
+});
+
+test("churn does not read a page number out of an unrelated header", () => {
+  assert.equal(totalCommits('<https://api.github.com/x?since=2024-01-01>; rel="next"'), null);
 });

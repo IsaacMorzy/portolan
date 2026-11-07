@@ -98,6 +98,23 @@ columns and a nightly-free recompute.
 **Acceptance.** Every node shows a commit count for the last 90 days, and a file
 with no history in the window shows zero rather than being dropped.
 
+**Shipped differently, and the difference is the point.** The plan was to
+compute churn for every file during the run and store it. That is one GitHub
+request per file, so a thousand-file repository spends a fifth of the hourly
+limit filling a column most readers never open — and it was the *cost*, not the
+schema, that had this ticket stuck on a decision.
+
+So it is computed for one file when someone asks about that file, and stored
+nowhere (`lib/graph/churn.ts`, `POST /api/churn`). One request, not a paginated
+walk: `per_page=1` plus the `Link` header's `rel="last"` page number gives the
+total, so a repository with 400 commits costs the same as one with 4. The
+schema question disappeared instead of being answered.
+
+Proved against the live API: `lib/pipeline/run.ts` → 1 commit, `README.md` → 2,
+a path with no history → 0 and no date, never an error. Four unit tests cover
+the Link-header arithmetic, because reading it wrong reports 1 commit for a file
+with 400 — which reads as "nobody touches this", the exact opposite of true.
+
 ### G5 — Language coverage
 
 **Problem.** TS/JS only. Every general tool in the table is multi-language.
@@ -152,6 +169,20 @@ supersedes rather than deletes the previous analysis.
 
 **Acceptance.** A repository whose default branch moved produces a new analysis
 within the window and the old one remains readable.
+
+**Shipped as a refresh in place, not a supersede.** One analysis per repository
+is a unique constraint that every read in the app depends on, so a second row
+would mean adding an `is_latest` filter to each of them — a large, quiet change
+to the part of the code that decides what a user can see. Instead the refresh
+replaces the map and records the commit it replaced in `previous_commit_sha`
+first, so "this map moved" survives the replacement and the header can read
+`49ef6c4 was 30cf8e7`. The *intent* of the acceptance line is met — staleness is
+visible; the letter of it is not, and an old map is not separately readable.
+
+Proved against the live database: aged an analysis past the six-hour cutoff,
+called the route with the real secret, and got `refreshed:["6631d51a"]` — the
+map went `30cf8e7` → `49ef6c4`, 245 edges re-read, `previous_commit_sha`
+populated, `refreshed_at` stamped. 401 without the secret, 401 with a wrong one.
 
 ### G10 — Onboarding tours
 
