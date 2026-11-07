@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { SignIn } from "@clerk/nextjs";
 import { AuthFrame } from "@/components/landing/auth-frame";
+
+export const metadata: Metadata = { title: "Sign in — Cartograph" };
 
 export default function SignInPage() {
   return (

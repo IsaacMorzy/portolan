@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { resolveHeadCommit } from "@/lib/pipeline/github";
 import { claimAnalysis, continueRun } from "@/lib/pipeline/run";
 import { createAdminSupabase } from "@/lib/supabase/admin";
+import { LIMITS, rateLimit } from "@/lib/ratelimit.ts";
 
 /**
  * G9 (#30): keep a map fresh after the default branch moves.
@@ -36,6 +37,13 @@ export async function GET(request: Request): Promise<Response> {
   }
   if (request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // The endpoint is reachable by anyone holding the secret, and each call can
+  // re-parse three repositories. Its budget is a day, not a minute.
+  const limited = rateLimit("cron:refresh", LIMITS.refresh);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "Refresh already ran today" }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
   }
 
   const db = createAdminSupabase();

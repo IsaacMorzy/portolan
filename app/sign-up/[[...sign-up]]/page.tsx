@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
 import { AuthFrame } from "@/components/landing/auth-frame";
+
+export const metadata: Metadata = { title: "Create an account — Cartograph" };
 
 export default function SignUpPage() {
   return (

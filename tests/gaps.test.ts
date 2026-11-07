@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { totalCommits } from "../lib/graph/churn.ts";
+import { rateLimit, resetLimits } from "../lib/ratelimit.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -134,4 +135,45 @@ test("churn treats a missing Link header as one page, not as zero", () => {
 
 test("churn does not read a page number out of an unrelated header", () => {
   assert.equal(totalCommits('<https://api.github.com/x?since=2024-01-01>; rel="next"'), null);
+});
+
+// --- Rate limiting ---------------------------------------------------------
+//
+// The limit exists because two routes could be driven in a loop: /api/graph
+// spends model tokens and /api/churn spends the GitHub token. A limiter that
+// never fires is a comment, so it is tested at the boundaries — the call that
+// is allowed, the one that is refused, and the one that is allowed again once
+// the window has moved.
+
+test("a limit allows exactly its allowance, then refuses", () => {
+  resetLimits();
+  const rule = { limit: 3, windowMs: 60_000 };
+  assert.deepEqual(rateLimit("a", rule), { ok: true });
+  assert.deepEqual(rateLimit("a", rule), { ok: true });
+  assert.deepEqual(rateLimit("a", rule), { ok: true });
+  const refused = rateLimit("a", rule);
+  assert.equal(refused.ok, false);
+  if (!refused.ok) assert.ok(refused.retryAfter >= 1, "a caller must be told when to come back");
+});
+
+test("one key's spending does not stop another", () => {
+  resetLimits();
+  const rule = { limit: 1, windowMs: 60_000 };
+  assert.equal(rateLimit("org_a", rule).ok, true);
+  assert.equal(rateLimit("org_a", rule).ok, false);
+  assert.equal(rateLimit("org_b", rule).ok, true, "a noisy organization must not lock out a quiet one");
+});
+
+test("the window slides rather than resets on a clock boundary", () => {
+  resetLimits();
+  const rule = { limit: 2, windowMs: 50 };
+  assert.equal(rateLimit("b", rule).ok, true);
+  assert.equal(rateLimit("b", rule).ok, true);
+  assert.equal(rateLimit("b", rule).ok, false);
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      assert.equal(rateLimit("b", rule).ok, true, "after the window, the allowance is back");
+      resolve();
+    }, 60);
+  });
 });

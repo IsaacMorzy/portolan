@@ -4,6 +4,7 @@ import { loadStoredAnalysis } from "@/lib/analysis/load";
 import { adjacency, reach, type Direction } from "@/lib/graph/reach.ts";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { explainFileAction } from "@/app/(workspace)/analyses/[id]/actions";
+import { LIMITS, rateLimit } from "@/lib/ratelimit.ts";
 
 /**
  * The analysis graph, over HTTP, for an agent holding a Clerk session (#25).
@@ -25,6 +26,9 @@ type Payload = {
   file?: string;
   direction?: Direction;
   depth?: number;
+  // Off unless asked for. This route used to explain on every call, which made
+  // it a way to spend model tokens by looping over file names.
+  explain?: boolean;
 };
 
 export async function POST(request: Request): Promise<Response> {
@@ -44,6 +48,11 @@ export async function POST(request: Request): Promise<Response> {
   }
   const direction: Direction = body.direction === "dependencies" ? "dependencies" : "dependents";
   const depth = Number.isInteger(body.depth) && body.depth! > 0 && body.depth! <= 5 ? body.depth! : 2;
+
+  const limited = rateLimit(`graph:${orgId}`, LIMITS.graph);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
+  }
 
   const db = await createServerSupabase();
   const { data: analysis, error: analysisError } = await db
@@ -68,8 +77,23 @@ export async function POST(request: Request): Promise<Response> {
 
   const { steps, beyond } = reach(adjacency(parsed), file, direction, depth);
 
-  // The explanation is the same call the dashboard makes, so an agent cannot
-  // get an answer a person could not, and it is cached identically.
+  // The graph itself is free to read; the explanation is a model call, so it
+  // is opt-in. Without this, a loop over file names is a loop over model calls
+  // and the only ceiling is the bill. When it is asked for, it is the same call
+  // the dashboard makes and is cached identically, so an agent cannot get an
+  // answer a person could not.
+  if (body.explain !== true) {
+    return NextResponse.json({ analysisId, file, direction, depth, steps, beyond });
+  }
+
+  const explainLimit = rateLimit(`explain:${orgId}`, LIMITS.explain);
+  if (!explainLimit.ok) {
+    return NextResponse.json(
+      { analysisId, file, direction, depth, steps, beyond, explanation: { error: "Explanation rate limit reached" } },
+      { status: 200, headers: { "X-Explain-Retry-After": String(explainLimit.retryAfter) } },
+    );
+  }
+
   const explained = await explainFileAction(analysisId, file);
   return NextResponse.json({
     analysisId,

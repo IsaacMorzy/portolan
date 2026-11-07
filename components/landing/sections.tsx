@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Globe } from "@/components/velora/globe";
 import { FileTree, type FileNode } from "@/components/velora/file-tree";
 import { SpotlightCard } from "@/components/velora/spotlight-card";
+import { CodeBlock } from "@/components/velora/code-block";
 
 // The shape the map indexes, shown as the tree it actually is. Roles are what
 // separate a map from a list of files, so the section names them.
@@ -47,7 +48,7 @@ const STEPS = [
 export function Workflow() {
   return (
     <section id="workflow" className="border-t border-line">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-16 md:py-28">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 [&>*]:min-w-0 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-16 md:py-28">
         <div>
           <h2 className="max-w-[18ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
             From a URL to a map you can read
@@ -62,9 +63,32 @@ export function Workflow() {
               count is printed beside the map.
             </p>
           </div>
+
+          {/* The four stages the run actually reports, in order, with the line
+              each one logs. This column had nothing to look at before — a
+              heading and two paragraphs beside a list — so the section read as
+              the page's flattest stretch. It is the pipeline's own vocabulary,
+              not a diagram invented for the marketing page. */}
+          <div className="mt-8 min-w-0">
+            <CodeBlock
+              filename="cartograph run"
+              language="bash"
+              code={`$ cartograph analyze https://github.com/acme/web
+
+fetch    archive at 7f2c1ab          4.1 MB
+select   1,204 files, 812 sources
+parse    3,916 imports, 41 unresolved
+store    3,875 edges, 812 roles
+
+done     analysis 9e01f4c2`}
+            />
+          </div>
         </div>
 
-        <ol className="divide-y divide-line border-t border-line md:border-t-0">
+        {/* min-w-0 because a single-column grid sizes its track to the widest
+            child's min-content: without it the code block below widens the
+            whole page instead of scrolling inside itself. */}
+        <ol className="min-w-0 divide-y divide-line border-t border-line md:border-t-0">
           {STEPS.map((s) => (
             <li key={s.title} className="py-6 first:pt-0">
               <h3 className="text-[0.9375rem] font-medium">{s.title}</h3>

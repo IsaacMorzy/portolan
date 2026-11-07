@@ -33,8 +33,8 @@ export function Marquee({
         vertical ? "flex-col motion-reduce:overflow-y-auto" : "flex-row",
         fade &&
           (vertical
-            ? "[mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]"
-            : "[mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"),
+            ? "fade-y"
+            : "fade-x"),
         className
       )}
     >

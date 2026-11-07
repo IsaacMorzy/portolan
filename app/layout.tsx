@@ -8,11 +8,19 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  // Text renders in the fallback immediately and swaps when the file lands.
+  // Without this, a slow font is a blank headline, which is the worst thing a
+  // landing page can show.
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  // Only used for code and identifiers, never for a heading, so it must not
+  // compete with the text face for early bandwidth.
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -21,8 +29,24 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://codegraph-navy.vercel.app"),
   title: "Cartograph",
   description: "Dependency maps of public GitHub repositories",
-  openGraph: { siteName: "Cartograph", type: "website" },
-  twitter: { card: "summary_large_image" },
+  // Relative, so metadataBase resolves it. opengraph-image.tsx fills this in
+  // automatically, but naming it here keeps the card from silently vanishing
+  // if that file is ever renamed.
+  alternates: { canonical: "/" },
+  openGraph: {
+    siteName: "Cartograph",
+    type: "website",
+    url: "/",
+    title: "Cartograph — see what your code depends on",
+    description: "Every edge resolved by the parser, every explanation cited to a file it actually read.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Cartograph" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cartograph — see what your code depends on",
+    description: "Every edge resolved by the parser, every explanation cited to a file it actually read.",
+  },
+  robots: { index: true, follow: true },
 };
 
 // Clerk's components read the same tokens as the app, so they follow the

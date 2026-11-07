@@ -30,8 +30,23 @@ export default async function LandingPage() {
   const theme = parseTheme(jar.get(THEME_COOKIE)?.value);
   const signedIn = Boolean(userId);
 
+  // Structured data, so a search result can say what this is rather than
+  // guessing from the page. Static object, serialized once at render.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Cartograph",
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web",
+    description:
+      "Parses a TypeScript repository into a map of modules and the edges between them, then explains each one using only the code it read.",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    url: "https://codegraph-navy.vercel.app/",
+  };
+
   return (
     <div className="flex min-h-full flex-col bg-canvas">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Nav theme={theme} signedIn={signedIn} />
       <main className="flex-1">
         <Hero />

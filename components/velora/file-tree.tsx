@@ -79,7 +79,9 @@ export function FileTree({ tree, className }: FileTreeProps) {
   return (
     <ul
       data-slot="file-tree"
-      className={cn("w-full rounded-xl border bg-surface p-3 font-mono", className)}
+      // `border` with no colour falls back to currentColor in Tailwind v4, which in
+      // dark mode is near-white text — a bright outline on a dark card.
+      className={cn("w-full rounded-xl border border-line bg-surface p-3 font-mono", className)}
     >
       {tree.map((node) => (
         <Node key={node.name} node={node} depth={0} />

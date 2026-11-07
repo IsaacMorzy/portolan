@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { countChurn } from "@/lib/graph/churn.ts";
+import { LIMITS, rateLimit } from "@/lib/ratelimit.ts";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 /**
@@ -28,6 +29,11 @@ export async function POST(request: Request): Promise<Response> {
   const { analysisId, path } = body;
   if (!analysisId || !path) {
     return NextResponse.json({ error: "analysisId and path are required" }, { status: 400 });
+  }
+
+  const limited = rateLimit(`churn:${orgId}`, LIMITS.churn);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: { "Retry-After": String(limited.retryAfter) } });
   }
 
   const db = await createServerSupabase();

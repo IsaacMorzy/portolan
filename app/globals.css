@@ -11,9 +11,9 @@
   --canvas: light-dark(#fafafa, #0c0c0d);
   --surface: light-dark(#ffffff, #131315);
   --raised: light-dark(#f0f0f2, #1d1d20);
-  --line: light-dark(#e3e3e7, #2a2a2e);
+  --line: light-dark(#dcdce2, #3f3f47);
   --fg: light-dark(#18181b, #e6e6e9);
-  --fg-muted: light-dark(#6b6b73, #8d8d96);
+  --fg-muted: light-dark(#63636b, #9d9da7);
   --accent: light-dark(#2563eb, #4f8bff);
   --accent-fg: #ffffff;
 
@@ -125,4 +125,18 @@ body {
   .rise {
     animation: none;
   }
+}
+
+/* Fades the ends of a scrolling row so it leaves the page instead of being cut.
+   Written as a utility rather than a 90-character arbitrary class because that
+   class silently produced no rule at all, and the ticker was hard-clipped at
+   the right edge for weeks looking like a styling nit. */
+.fade-x {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent);
+}
+
+.fade-y {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent);
 }

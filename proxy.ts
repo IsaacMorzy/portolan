@@ -16,6 +16,10 @@ const isPublic = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/cron(.*)",
+  // The social card. A crawler fetching it has no session, and a card that
+  // redirects to sign-in is a card that never renders.
+  "/opengraph-image(.*)",
+  "/twitter-image(.*)",
 ]);
 
 // Protection happens here, before any route renders, so a signed-out visitor
