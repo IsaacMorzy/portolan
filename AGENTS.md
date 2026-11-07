@@ -45,6 +45,18 @@ Three rules about the rewrite itself:
 - **The rewrite never adds scope.** It is a restatement, not a proposal; if the
   restated version contains something the request did not, the restatement is wrong.
 
+### The lane
+
+Work arrives through a map, never as a bullet in a transcript. The shape is Matt
+Pocock's wayfinder: one `wayfinder:map` issue holds the intent and the refusals, its
+children are lanes, and **one lane is open at a time**. A lane is not started until
+the measurement that justifies it exists, and it is not closed until a named check
+passes — a lane with no check is a wish with a number.
+
+If a request spans several lanes, file them all and open the first. Saying so out
+loud is part of the job: "that is three lanes" is a better answer than three
+half-built lanes.
+
 ### 0.1 The prompt file comes before the first edit
 
 Written down here because it was skipped: a session began editing on the first
