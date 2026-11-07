@@ -170,16 +170,33 @@ export function Hero() {
         </figcaption>
       </figure>
 
-      <Marquee className="mt-8 border-y border-line py-2.5 [--duration:46s] [--gap:0rem]" repeat={3}>
-        {TRACED.map((item) => (
-          <span
-            key={item}
-            className="whitespace-nowrap px-4 text-xs text-fg-muted after:ml-4 after:text-fg-muted/35 after:content-['/']"
-          >
-            {item}
-          </span>
-        ))}
-      </Marquee>
+      {/* Full-bleed, because a ticker boxed inside the column reads as a caption
+          for the figure above it. Spanning the viewport makes it the dateline of
+          the page: what the map records, before anyone signs up. Two rows moving
+          opposite ways, so the strip has a direction rather than a drift. */}
+      <div className="relative left-1/2 mt-10 w-screen -translate-x-1/2 border-y border-line bg-canvas py-2.5">
+        <Marquee className="[--duration:52s] [--gap:0rem]" repeat={3}>
+          {TRACED.map((item) => (
+            <span
+              key={item}
+              className="whitespace-nowrap px-5 text-xs text-fg-muted after:ml-5 after:text-fg-muted/35 after:content-['/']"
+            >
+              {item}
+            </span>
+          ))}
+        </Marquee>
+        <Marquee reverse className="mt-2.5 border-t border-line/60 pt-2.5 [--duration:64s] [--gap:0rem]" repeat={3}>
+          {TRACED.map((item) => (
+            <span
+              key={item}
+              aria-hidden="true"
+              className="whitespace-nowrap px-5 text-xs text-fg-muted/55 after:ml-5 after:text-fg-muted/20 after:content-['/']"
+            >
+              {item}
+            </span>
+          ))}
+        </Marquee>
+      </div>
     </section>
   );
 }

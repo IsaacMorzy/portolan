@@ -61,12 +61,12 @@ half-built lanes.
 
 **The product is Portolan.** A portolan chart is the medieval chart that plots
 routes between ports; that is the shape of what this tool draws — modules as
-ports, resolved imports as routes. It was `Cartograph` until the name was
-researched against registries (`portolan`: ~156 GitHub repositories and one stale
-npm package, against 10,670 for `tessera`) and replaced on every public surface.
-The repository is still `codegraph`; the deploy host is still
-`codegraph-navy.vercel.app`. Renaming those is a migration, not a copy edit, and
-is not done.
+ports, resolved imports as routes. Renamed from `Cartograph` and researched twice
+through `agent-reach` (`npm`, `github`, `hn` taps). The evidence, including the two
+candidates that were rejected for colliding with *this* category (`rhumb`,
+`soundings`) and why every short nautical `.vercel.app` is already taken, is in
+`docs/naming.md`. The repository is `IsaacMorzy/portolan`; the deploy host stays
+`codegraph-navy.vercel.app`, because a free slug somebody else owns is not a name.
 
 **A price may name only what exists, or be labelled `in build`.** `#pricing`
 lists plans whose rows are either shipped or carry that label in the row itself,
