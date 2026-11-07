@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Globe } from "@/components/velora/globe";
 
 /**
  * Workflow. Three real stages, in order, so it is marked up as an ordered list
@@ -200,21 +201,47 @@ export function Teams() {
 export function Close({ signedIn }: { signedIn: boolean }) {
   return (
     <section className="border-t border-line">
-      <div className="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
-        <h2 className="mx-auto max-w-[24ch] text-[2rem] leading-[1.08] font-semibold tracking-[-0.03em] md:text-[2.75rem]">
-          Find out what breaks before you change it
-        </h2>
-        <p className="mx-auto mt-5 max-w-[44ch] text-[0.9375rem] leading-relaxed text-fg-muted">
-          Pick the module everyone is nervous about. Paste the repository. You get the map, and the
-          list of what depends on it, in about a minute.
-        </p>
-        <div className="mt-8 flex justify-center">
-          <Link
-            href={signedIn ? "/dashboard" : "/sign-up"}
-            className="flex h-8 items-center rounded bg-accent px-4 text-xs font-medium text-accent-fg"
-          >
-            {signedIn ? "Open dashboard" : "Map a repository"}
-          </Link>
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-24 md:grid-cols-[minmax(0,1fr)_300px] md:py-32">
+        <div>
+          <h2 className="max-w-[24ch] text-[2rem] leading-[1.08] font-semibold tracking-[-0.03em] text-balance md:text-[2.75rem]">
+            Find out what breaks before you change it
+          </h2>
+          <p className="mt-5 max-w-[44ch] text-[0.9375rem] leading-relaxed text-fg-muted">
+            Pick the module everyone is nervous about. Paste the repository. You get the map, and the
+            list of what depends on it, in about a minute.
+          </p>
+          <div className="mt-8">
+            <Link
+              href={signedIn ? "/dashboard" : "/sign-up"}
+              className="inline-flex h-8 items-center rounded bg-accent px-4 text-xs font-medium text-accent-fg"
+            >
+              {signedIn ? "Open dashboard" : "Map a repository"}
+            </Link>
+          </div>
+        </div>
+
+        {/* The product draws maps; this is one, in the smallest form that still
+            reads as a map. Dots take the border colour so it stays quiet, and
+            the arcs take the accent so there is one moving thing on the page. */}
+        <div className="relative mx-auto aspect-square w-full max-w-[300px] opacity-80" aria-hidden="true">
+          <Globe
+            className="size-full"
+            dotColor="var(--fg-muted)"
+            accentColor="var(--accent)"
+            samples={6000}
+            speed={4}
+            markers={[
+              { lat: 51.5, lng: -0.1 },
+              { lat: 40.7, lng: -74 },
+              { lat: 52.5, lng: 13.4 },
+              { lat: 35.7, lng: 139.7 },
+            ]}
+            arcs={[
+              { from: [51.5, -0.1], to: [35.7, 139.7] },
+              { from: [40.7, -74], to: [52.5, 13.4] },
+              { from: [51.5, -0.1], to: [40.7, -74] },
+            ]}
+          />
         </div>
       </div>
     </section>

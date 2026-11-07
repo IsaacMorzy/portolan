@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Marquee } from "@/components/velora/marquee";
 
 /**
  * The hero shows the transformation the product performs rather than a picture
@@ -43,6 +44,17 @@ const EDGES: [string, string][] = [
 
 const W = 96;
 const H = 26;
+
+// What the map is made of, said plainly. The ticker shows the shape of the
+// output before anyone signs up, not a strip of adjectives.
+const TRACED = [
+  "imports become edges",
+  "route handlers marked",
+  "every file given a role",
+  "impact radius per module",
+  "explanations read off the parsed tree",
+  "unresolved imports counted, not hidden",
+];
 
 function center(n: Node) {
   return { cx: n.x + W / 2, cy: n.y + H / 2 };
@@ -143,6 +155,17 @@ export function Hero() {
           Six modules, five edges — every node resolved from an import that exists in the parsed tree.
         </figcaption>
       </figure>
+
+      <Marquee className="mt-8 border-y border-line py-2.5 [--duration:46s] [--gap:0rem]" repeat={3}>
+        {TRACED.map((item) => (
+          <span
+            key={item}
+            className="whitespace-nowrap px-4 text-xs text-fg-muted after:ml-4 after:text-fg-muted/35 after:content-['/']"
+          >
+            {item}
+          </span>
+        ))}
+      </Marquee>
     </section>
   );
 }
