@@ -5,7 +5,7 @@ import { fallbackAdapter } from "./adapters/fallback.ts";
 import { selectAdapter, type FrameworkAdapter } from "./adapters/index.ts";
 import type { ExcludedDirectory, Project, SkippedFile } from "./types.ts";
 
-export const CODE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".py"];
+export const CODE_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".py", ".go"];
 const DECLARATION = /\.d\.(ts|mts|cts)$|\.d\.[^/.]+\.ts$/;
 
 // Generated bundles and vendored blobs run past this; hand-written modules don't.

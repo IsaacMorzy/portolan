@@ -21,6 +21,7 @@ import { placementRole } from "./adapters/conventions.ts";
 import type { AdapterFile } from "./adapters/types.ts";
 import { walkRepository, withinProject, type WalkResult } from "./walk.ts";
 import { readWorkspace } from "../workspace/packages.ts";
+import { isGo, goImports, resolveGo } from "./go.ts";
 
 export type Selection = { root: string; walk: WalkResult };
 
@@ -47,10 +48,11 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
     skipFileDependencyResolution: true,
     compilerOptions: { allowJs: true, noLib: true, noResolve: true, types: [] },
   });
-  // Python never reaches ts-morph: it would report a syntax error on the first
-  // line and every import in the repository's scripts folder would vanish.
-  const jsCandidates = walk.candidates.filter((candidate) => !isPython(candidate.path));
+  // Python and Go never reach ts-morph: they would report a syntax error and
+  // every import in the repository's scripts folder would vanish.
+  const jsCandidates = walk.candidates.filter((candidate) => !isPython(candidate.path) && !isGo(candidate.path));
   const pyCandidates = walk.candidates.filter((candidate) => isPython(candidate.path));
+  const goCandidates = walk.candidates.filter((candidate) => isGo(candidate.path));
 
   const sourceFiles = jsCandidates.map((candidate) => ({
     candidate,
@@ -115,6 +117,11 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
       imports: pythonImports(candidate.content).map((found) => ({ ...found })),
       exports: [] as string[],
     })),
+    ...goCandidates.map((candidate) => ({
+      candidate,
+      imports: goImports(candidate.content).map((found) => ({ ...found })),
+      exports: [] as string[],
+    })),
   ];
 
   for (const { candidate, imports, exports: exported } of units) {
@@ -122,12 +129,16 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
     for (const found of imports) {
       const specifier = found.specifier;
       const fromPython = isPython(candidate.path);
+      const fromGo = isGo(candidate.path);
       const pyTarget = fromPython ? resolvePython(candidate.path, specifier, resolver.nodes()) : null;
+      const goTarget = fromGo ? resolveGo(candidate.path, specifier, resolver.nodes()) : null;
       // Python is resolved here or not at all. Falling through to the TypeScript
       // resolver would classify `import os` as a *Node* builtin, because both
       // languages happen to have a module called os — a wrong answer that looks
-      // like a right one. Relative specifiers that miss are a real defect in the
-      // repository, so they are reported unresolved rather than excused as external.
+      // like a right one. Go has the same collision risk with `fmt`/`os`, so it
+      // is resolved here or not at all either. Relative specifiers that miss are
+      // a real defect in the repository, so they are reported unresolved rather
+      // than excused as external.
       const pythonOutcome: ImportStatus | null = !fromPython
         ? null
         : pyTarget !== null
@@ -135,7 +146,14 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
           : specifier.startsWith(".")
             ? { status: "unresolved", reason: "file-not-found", detail: "no such module in this repository" }
             : { status: "external", external: "package" };
-      const outcome: ImportStatus = pythonOutcome ?? (found.literal
+      const goOutcome: ImportStatus | null = !fromGo
+        ? null
+        : goTarget !== null
+          ? { status: "internal", target: goTarget }
+          : specifier.startsWith(".")
+            ? { status: "unresolved", reason: "file-not-found", detail: "no such module in this repository" }
+            : { status: "external", external: "package" };
+      const outcome: ImportStatus = goOutcome ?? pythonOutcome ?? (found.literal
         ? resolver.resolve(candidate.absolutePath, found.specifier, found.kind)
         : {
             status: "unresolved",

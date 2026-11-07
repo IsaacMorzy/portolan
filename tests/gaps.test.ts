@@ -9,6 +9,7 @@ import { totalCommits } from "../lib/graph/churn.ts";
 import { rateLimit, resetLimits } from "../lib/ratelimit.ts";
 import { formatTour, MAX_TOUR_STEPS, tour } from "../lib/graph/tour.ts";
 import { pythonImports, resolvePython } from "../lib/parser/python.ts";
+import { goImports, resolveGo } from "../lib/parser/go.ts";
 import { appJwt, appManifest, installUrl } from "../lib/github/app.ts";
 import { mayRead } from "../lib/github/credential.ts";
 import { placementRole } from "../lib/parser/adapters/conventions.ts";
@@ -295,6 +296,50 @@ test("python: one dot is this package, two is the parent", () => {
 test("python: `from . import x` resolves to the package, never to an invented module", () => {
   const nodes = new Set(["pkg/__init__.py", "pkg/deep.py"]);
   assert.equal(resolvePython("pkg/util.py", ".", nodes), "pkg/__init__.py");
+});
+
+// --- G6 (#46) Go imports -----------------------------------------------------
+
+test("go: single and aliased imports keep the module, not the alias", () => {
+  const found = goImports('import "fmt"\nimport x "a/b"\nimport _ "c/d"\n');
+  assert.deepEqual(found.map((f) => f.specifier), ["fmt", "a/b", "c/d"]);
+});
+
+test("go: a parenthesized block contributes every quoted specifier", () => {
+  const source = `import (
+	"fmt"
+	"a/b"
+	y "c/d"
+)`;
+  assert.deepEqual(goImports(source).map((f) => f.specifier), ["fmt", "a/b", "c/d"]);
+});
+
+test("go: commented-out imports never become edges", () => {
+  const source = `// import "commented"
+import "kept"
+/* import "blocked" */
+import "also-kept"
+`;
+  assert.deepEqual(goImports(source).map((f) => f.specifier), ["kept", "also-kept"]);
+});
+
+test("go: line numbers point at the import, not the file start", () => {
+  const found = goImports("\n\nimport \"late\"\n");
+  assert.equal(found[0].line, 3);
+});
+
+test("go: absolute specifiers resolve to a module file", () => {
+  const nodes = new Set(["pkg/mod.go", "pkg/thing.go"]);
+  assert.equal(resolveGo("app/main.go", "pkg/mod", nodes), "pkg/mod.go");
+  assert.equal(resolveGo("app/main.go", "pkg/thing", nodes), "pkg/thing.go");
+  assert.equal(resolveGo("app/main.go", "missing/mod", nodes), null);
+});
+
+test("go: one dot is this package, two is the parent", () => {
+  const nodes = new Set(["app/base.go", "base.go", "app/sub/x.go"]);
+  assert.equal(resolveGo("app/mod.go", ".base", nodes), "app/base.go");
+  assert.equal(resolveGo("app/sub/mod.go", "..base", nodes), "app/base.go");
+  assert.equal(resolveGo("app/sub/mod.go", "...base", nodes), null, "climbing past the root is not a path");
 });
 
 // --- G1 (#27) GitHub App ------------------------------------------------
