@@ -72,7 +72,7 @@ for (const file of files) {
 
     // A bare `border` resolves to currentColor in Tailwind v4, which is near-white
     // in dark mode. This shipped once as a file tree with glowing outlines.
-    for (const match of line.matchAll(/(?:^|["'\s])border(?![-a-zA-Z])/g)) {
+    if (/(?:^|["'\s])border(?![-a-zA-Z])/.test(line)) {
       add(rel, n, "bare-border", "border", "A border with no colour is currentColor in v4 — invisible on light, glaring on dark. Name the token.");
     }
 

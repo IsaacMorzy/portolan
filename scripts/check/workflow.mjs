@@ -101,7 +101,7 @@ if (STAGED && touchesSource) {
 // 6. A commit subject is read in a log. Empty, or long enough to be a paragraph,
 //    means nobody will read it.
 if (!STAGED) {
-  const subject = execSync("git log -1 --pretty=%s", { encoding: "utf8" }).trim();
+  const subject = git("git log -1 --pretty=%s");
   if (subject.length < 15) fail("last commit subject says something", `${subject.length} chars`);
   else if (subject.length > 100) fail("last commit subject fits a log", `${subject.length} chars`);
   else pass("last commit subject says something", subject.slice(0, 60));

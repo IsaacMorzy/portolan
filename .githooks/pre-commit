@@ -1,17 +1,23 @@
 #!/bin/sh
-# The machine half of AGENTS.md. Three checks that catch what review misses:
-# the design system drifting, the rules file going stale, and a commit that never
-# ran the checks the repo's own definition of done requires.
+# The machine half of AGENTS.md. Five checks that catch what review misses:
+# a secret leaving the machine, an entry point that forgot its guard, the design
+# system drifting, the rules file going stale, and the bar being lowered instead
+# of met.
 #
-# Fast by design — slop and drift read files, workflow reads git. The browser
-# checks (pnpm e2e) are too slow for a commit and belong to CI or a deliberate run.
+# Fast by design — these read files and git. The browser checks (pnpm e2e) are
+# too slow for a commit and belong to CI or a deliberate run; a hook slow enough
+# to be endured with --no-verify teaches everyone to use --no-verify.
 set -e
 
-echo "  slop      "; node scripts/check/slop.mjs
-echo "  design    "; node scripts/check/design.mjs
-echo "  workflow  "; node scripts/check/workflow.mjs --staged
+for check in secrets guards slop design bar; do
+  printf '  %-9s ' "$check"
+  node "scripts/check/$check.mjs"
+done
 
-# The type and lint gates are the ones a commit genuinely must not break.
+printf '  %-9s ' workflow
+node scripts/check/workflow.mjs --staged
+
+# The two gates a commit genuinely must not break.
 npx tsc --noEmit
 npx eslint . --quiet
 

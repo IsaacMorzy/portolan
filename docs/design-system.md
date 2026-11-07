@@ -210,6 +210,9 @@ Not by review, because review only sees what gets reviewed.
 | `scripts/check/design.mjs` — off-scale sizes, bare `border`, off-grid spacing, non-token colours | drift in source, before it reaches a browser |
 | `scripts/check/slop.mjs` — gradients, default palette, glass, shadows, emoji, eyebrows | the §8 list, mechanically |
 | `.githooks/pre-commit` | all of the above, on every commit |
+| `scripts/check/secrets.mjs` | a credential reaching a commit |
+| `scripts/check/guards.mjs` | an entry point without a guard, a secret-key client in a browser bundle, a paid route without a limit |
+| `scripts/check/bar.mjs` | a suppression added instead of a fix |
 
 When a defect escapes, **add a check**. A note in this file is not enforcement —
 this file is already the note that the last defect ignored.

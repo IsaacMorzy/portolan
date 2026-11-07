@@ -258,14 +258,22 @@ the two gates that a commit genuinely must not break.
 
 | Hook | Fails on |
 | --- | --- |
+| `scripts/check/secrets.mjs` | An env file staged, or a credential-shaped string anywhere — `vcp_`, `csk-`/`sk-`, `ghp_`, `sk_live_`, a JWT, an AWS key, a private key block. Scans untracked files too, redacts what it finds, and never echoes the value. |
+| `scripts/check/guards.mjs` | An entry point that never asks who is calling; the secret-key Supabase client or an AI/GitHub module imported into a `"use client"` file; an API route that spends money without `lib/ratelimit`; a `LIMITS.<key>` that does not exist; a cron route without its bearer check. |
 | `scripts/check/slop.mjs` | Gradients, Tailwind's default palette, glass/blur, shadows, emoji, eyebrows, `01/02/03` markers, and raw hex outside the token layer. Each finding prints the reason, not just the location. |
 | `scripts/check/design.mjs` | Type sizes off the twelve-step scale, bare `border` (resolves to `currentColor` in v4), spacing off the 4pt grid, and colour utilities that are not semantic tokens. |
 | `scripts/check/workflow.mjs` | A rules file pointing at a file that does not exist, `AGENTS.md` and `CLAUDE.md` disagreeing, a gap in `prompts/` numbering, and an unreadable commit subject. |
+| `scripts/check/bar.mjs` | `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, and `dangerouslySetInnerHTML` above a declared ceiling. The numbers are the counts today, so the rule is "no more", and lowering one is progress you can measure. |
 | `npx tsc --noEmit`, `npx eslint . --quiet` | Types and lint. |
 
-Run them by hand with `pnpm check`, or one at a time with `pnpm check:slop`,
-`check:design`, `check:workflow`. All three accept a file list, so a single file
-can be checked while it is being written.
+Run them by hand with `pnpm check`, or one at a time with `pnpm check:secrets`,
+`check:guards`, `check:slop`, `check:design`, `check:bar`, `check:workflow`.
+
+Each was tested by writing a deliberate violation and confirming it fails — a
+check that has never failed is a check nobody knows the shape of. Two earned
+their keep that way: `secrets.mjs` was scanning only tracked files, so a secret
+written today stayed invisible until the moment it was committed, and
+`workflow.mjs` blocked its own commit on a regex where `ts` matched before `tsx`.
 
 The browser checks are deliberately **not** in the hook: `pnpm e2e` takes minutes
 and needs a dev server. A hook nobody can afford to wait for is a hook everyone
