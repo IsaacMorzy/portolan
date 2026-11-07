@@ -33,7 +33,11 @@
   --kind-3: light-dark(#e11d48, #fb7185);
   --kind-4: light-dark(#0891b2, #22d3ee);
 
-  --edge: light-dark(#a1a1aa, #52525b);
+  /* Non-text contrast for a line that carries meaning: 3:1 is the floor, and
+     both of these clear it (light 4.83:1, dark 5.44:1). The previous pair was
+     2.56:1 in either mode — measurably below the floor and still drawn, which is
+     how a map looks fine in a screenshot and can't be read in use. */
+  --edge: light-dark(#71717a, #8b8b95);
 }
 
 :root[data-theme="light"] {
