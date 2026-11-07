@@ -36,4 +36,20 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # lib/env.ts refuses to boot without these, which is right — but "right"
+      # means CI has to supply something. These are obviously fake on purpose: a
+      # placeholder that looks real is a placeholder somebody has to investigate.
+      # Nothing here reaches a network, so the build proves the code compiles,
+      # not that the keys work. That is what the deploy is for.
       - run: sh scripts/gate.sh --full
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
+          CLERK_SECRET_KEY: sk_test_placeholder
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
+          SUPABASE_SECRET_KEY: sb_secret_placeholder
