@@ -1,3 +1,4 @@
+import { generateKeyPairSync, verify } from "node:crypto";
 /**
  * The gap work from #21, #22 and #23: cycles, boundary rules, export and diff.
  * Same rule as the other file — node --test, node:assert, no framework.
@@ -8,6 +9,7 @@ import { totalCommits } from "../lib/graph/churn.ts";
 import { rateLimit, resetLimits } from "../lib/ratelimit.ts";
 import { formatTour, MAX_TOUR_STEPS, tour } from "../lib/graph/tour.ts";
 import { pythonImports, resolvePython } from "../lib/parser/python.ts";
+import { appJwt, appManifest, installUrl } from "../lib/github/app.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -291,4 +293,39 @@ test("python: one dot is this package, two is the parent", () => {
 test("python: `from . import x` resolves to the package, never to an invented module", () => {
   const nodes = new Set(["pkg/__init__.py", "pkg/deep.py"]);
   assert.equal(resolvePython("pkg/util.py", ".", nodes), "pkg/__init__.py");
+});
+
+// --- G1 (#27) GitHub App ------------------------------------------------
+
+test("manifest asks for read-only contents and nothing else", () => {
+  const manifest = appManifest({ redirectUrl: "https://x/api", setupUrl: "https://x/d" }, "cartograph");
+  assert.deepEqual(manifest.default_permissions, { contents: "read", metadata: "read" });
+  assert.equal(manifest.public, false);
+  // A webhook endpoint that does not exist yet would be retried forever.
+  assert.equal(manifest.hook_attributes.active, false);
+});
+
+test("the App JWT verifies against its own public key", () => {
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const pem = privateKey.export({ type: "pkcs1", format: "pem" }).toString();
+  const jwt = appJwt(12345, pem, 1_700_000_000);
+  const [header, payload, signature] = jwt.split(".");
+
+  assert.equal(JSON.parse(Buffer.from(header, "base64url").toString()).alg, "RS256");
+  const claims = JSON.parse(Buffer.from(payload, "base64url").toString());
+  assert.equal(claims.iss, 12345);
+  assert.equal(claims.iat, 1_700_000_000 - 60, "a token from the future is rejected by GitHub's clock");
+  assert.equal(claims.exp, 1_700_000_000 + 540, "ten minutes is the maximum GitHub allows");
+
+  const verified = verify(
+    "RSA-SHA256",
+    Buffer.from(`${header}.${payload}`),
+    { key: publicKey.export({ type: "spki", format: "pem" }) as string },
+    Buffer.from(signature, "base64url"),
+  );
+  assert.equal(verified, true);
+});
+
+test("the install URL carries the workspace, encoded", () => {
+  assert.equal(installUrl("cartograph", "org_1/2"), "https://github.com/apps/cartograph/installations/new?state=org_1%2F2");
 });

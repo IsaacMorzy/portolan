@@ -295,6 +295,45 @@ export type Database = {
           },
         ]
       }
+      github_apps: {
+        Row: {
+          app_id: number
+          client_id: string
+          client_secret: string
+          created_at: string
+          installation_id: number | null
+          organization_id: string
+          private_key: string
+          slug: string
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          app_id: number
+          client_id: string
+          client_secret: string
+          created_at?: string
+          installation_id?: number | null
+          organization_id: string
+          private_key: string
+          slug: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          app_id?: number
+          client_id?: string
+          client_secret?: string
+          created_at?: string
+          installation_id?: number | null
+          organization_id?: string
+          private_key?: string
+          slug?: string
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
       insights: {
         Row: {
           analysis_id: string
