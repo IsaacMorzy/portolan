@@ -61,4 +61,34 @@ must pass; a failing check is reported, never weakened.
 Say what shipped, what was skipped and why, and what is blocked on whom. One
 line of status at the end that is not a summary of the summary.
 
+
+## Debugging tools (MCP)
+
+Not all wired at once. One browser driver is live; the rest sit in config,
+disabled, and get switched on for the task that needs them.
+
+| Server | State | What it is for |
+| --- | --- | --- |
+| `chrome-debug` | on | Drives a Chrome you already have open, over its debugging port. It joins that profile, so it carries its cookies — the only client that gets past a Vercel or Cloudflare challenge, which a fresh headless browser cannot solve. |
+| `chrome-devtools` | on | DOM, console, network and performance over the DevTools protocol. |
+| `httpstatus` | off | SSL, CORS, redirect chains, HAR. Off because it wants an API key; a server that answers 401 on every call is worse than one that is visibly disabled. |
+| `puppeteer`, `playwright` | off | Third and fourth browser drivers. They were already in the global config; three drivers for one job is a way to get three answers. |
+
+Start the browser once, then leave it running:
+
+```
+google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/codegraph-debug
+```
+
+Skipped, with reasons rather than silence:
+
+- **`x64dbgMCP`** debugs Windows native binaries through a Windows debugger.
+  This machine is Linux and the project has no native binary.
+- **WebMCP** is a browser API for a *site* to expose its own tools, not a
+  server to install.
+- The MCP debugging page linked alongside them is documentation, not a package.
+
+Config is global, in `~/.config/opencode/opencode.json`,
+`~/.free-pi/agent/mcp.json` and `~/.hermes/profiles/<profile>/config.yaml`.
+
 <!-- END:cartograph-workflow -->
