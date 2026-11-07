@@ -45,6 +45,25 @@ Three rules about the rewrite itself:
 - **The rewrite never adds scope.** It is a restatement, not a proposal; if the
   restated version contains something the request did not, the restatement is wrong.
 
+### 0.1 The prompt file comes before the first edit
+
+Written down here because it was skipped: a session began editing on the first
+tool call and only wrote the prompt afterwards. §0 says restate the request; this
+says *where* — `prompts/NNNN-slug.md`, five parts, before the first `edit` or
+`write`, not after it.
+
+If the request is genuinely a one-line question, the prompt is the answer and no
+file is needed. If it will produce a diff, it gets a file first. The test is
+mechanical: **did anything change before the prompt existed?**
+
+### 0.2 Report images live in `img/`
+
+`scripts/e2e/shots/` is gitignored because those are measurements, worthless once
+the run ends. `img/` is tracked because those are evidence: a claim that something
+was checked by looking has to survive the session that looked. Name them
+`YYYY-MM-DD-<screen>-<what>.png` and link them from the issue or PR making the
+claim.
+
 ## 1. Prompt first
 
 Every request is rewritten before it is executed. Improve it with the

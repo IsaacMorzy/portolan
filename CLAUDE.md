@@ -25,6 +25,25 @@ restatement is shown, so it can be corrected in one line rather than after a
 merge. Merged requests split into separate changes, ambiguity is stated rather
 than guessed, and the rewrite never adds scope the request did not have.
 
+### 0.1 The prompt file comes before the first edit
+
+Written down here because it was skipped: a session began editing on the first
+tool call and only wrote the prompt afterwards. The rule above says restate the
+request; this says *where* — `prompts/NNNN-slug.md`, five parts, before the first
+`edit` or `write`, not after it.
+
+If the request is genuinely a one-line question, the prompt is the answer and no
+file is needed. If it will produce a diff, it gets a file first. The test is
+mechanical: **did anything change before the prompt existed?**
+
+### 0.2 Report images live in `img/`
+
+`scripts/e2e/shots/` is gitignored because those are measurements, worthless once
+the run ends. `img/` is tracked because those are evidence: a claim that something
+was checked by looking has to survive the session that looked. Name them
+`YYYY-MM-DD-<screen>-<what>.png` and link them from the issue or PR making the
+claim.
+
 ## How we work
 
 Spec driven. Nothing gets built without a spec.

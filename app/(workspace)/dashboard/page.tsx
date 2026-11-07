@@ -4,11 +4,26 @@ import { AnalysesTable } from "@/components/progress/analyses-table";
 import type { RowData } from "@/components/progress/analysis-row";
 import { StateMark } from "@/components/state-mark";
 import { SubmitForm } from "@/components/submit-form";
+import { FileTree, type FileNode } from "@/components/velora/file-tree";
 import { isStale, type Status } from "@/lib/pipeline/stages";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ago } from "@/lib/time";
 
 const LIST_LIMIT = 100;
+
+// Fixture, not a real repository: an empty state should not fake data, and a
+// sample that looks like somebody's code invites the question of whose.
+const SAMPLE_TREE: FileNode[] = [
+  {
+    name: "app",
+    children: [{ name: "dashboard" }, { name: "analyses" }, { name: "api" }],
+  },
+  {
+    name: "lib",
+    children: [{ name: "parser" }, { name: "graph" }, { name: "pipeline" }],
+  },
+  { name: "components" },
+];
 type Tally = Status | "stale";
 const TALLY_ORDER: Tally[] = ["running", "queued", "stale", "complete", "failed"];
 
@@ -46,7 +61,7 @@ export default async function DashboardPage() {
         {rows.length > 0 && (
           <ul className="ml-auto flex items-center gap-3 text-xs text-fg-muted tabular-nums">
             {TALLY_ORDER.filter((s) => counts.has(s)).map((s) => (
-              <li key={s} className="flex items-center gap-1.5">
+              <li key={s} className="flex h-7 items-center gap-1.5">
                 <StateMark status={s === "stale" ? "running" : s} stale={s === "stale"} />
                 {counts.get(s)} {s}
               </li>
@@ -56,9 +71,21 @@ export default async function DashboardPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="px-3 py-10 text-xs text-fg-muted">
-          <p className="text-fg">No analyses yet.</p>
-          <p className="mt-1">Paste a public GitHub repository above to map it.</p>
+        /* A sentence says there is nothing here; a tree says what will be here.
+           Kept to five nodes because the point is the shape — folders, files and
+           the edges between them — not a tutorial. */
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6 px-3 py-8">
+          <div className="text-xs text-fg-muted">
+            <p className="text-fg">No analyses yet.</p>
+            <p className="mt-1 leading-5">
+              Paste a public GitHub repository above. A run resolves every import into a
+              directory graph, lists the routes it finds, and explains what a folder is
+              for — so the answer looks like this, not like a summary.
+            </p>
+          </div>
+          <div className="min-w-0">
+            <FileTree tree={SAMPLE_TREE} />
+          </div>
         </div>
       ) : (
         <AnalysesTable rows={rows} />
