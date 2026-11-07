@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Globe } from "@/components/velora/globe";
 import { FileTree, type FileNode } from "@/components/velora/file-tree";
+import { SpotlightCard } from "@/components/velora/spotlight-card";
 
 // The shape the map indexes, shown as the tree it actually is. Roles are what
 // separate a map from a list of files, so the section names them.
@@ -212,13 +213,13 @@ export function Teams() {
         <h2 className="max-w-[16ch] text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] md:text-[2rem]">
           One map your whole team can read
         </h2>
-        <ul className="space-y-5">
+        <ul className="space-y-4">
           {TEAM_POINTS.map((p) => (
-            <li key={p} className="max-w-[54ch] text-[0.9375rem] leading-relaxed text-fg-muted">
-              {p}
+            <li key={p}>
+              <SpotlightCard className="p-5 text-[0.9375rem] leading-relaxed text-fg-muted">{p}</SpotlightCard>
             </li>
           ))}
-          <li className="max-w-[54ch] text-[0.875rem] text-fg-muted">
+          <li className="max-w-[54ch] px-1 text-[0.875rem] text-fg-muted">
             Sign-in runs through Clerk, so one account covers every workspace you belong to.
           </li>
         </ul>

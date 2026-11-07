@@ -12,7 +12,10 @@
     "insights": "node scripts/insights.ts",
     "analyze": "node --env-file=.env.local scripts/analyze.ts",
     "test": "node --test \"tests/*.test.ts\"",
-    "cartograph": "node scripts/cartograph.ts"
+    "cartograph": "node scripts/cartograph.ts",
+    "e2e": "node scripts/e2e/landing.mjs && node scripts/e2e/api-graph.mjs",
+    "e2e:sign-in": "node --env-file=.env.local scripts/e2e/sign-in.mjs",
+    "e2e:shots": "node scripts/e2e/screenshots.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.7",
