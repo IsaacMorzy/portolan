@@ -15,6 +15,36 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 Read `CLAUDE.md` for what is true about this codebase. This section is the
 process, and it applies whether the request arrives as one line or as ten.
 
+## 0. Regenerate the prompt before obeying it
+
+**This fires on every request, before any other section.** The message as typed is
+evidence about what someone wants, not a specification. Restate it first, work
+from the restatement, and show the restatement so it can be corrected in one line
+instead of after a merge.
+
+The rewrite has five parts, and a part with nothing in it is a question to ask,
+not a gap to fill by guessing:
+
+| Part | What goes in it |
+| --- | --- |
+| **Outcome** | What is true afterwards that is not true now. One sentence. If it takes three, this is two requests. |
+| **Constraints** | The standing rules that bind this work: token-only styling, no new dependency without asking, secrets never client-side, one commit per idea. Only the ones that apply — a wall of boilerplate gets skipped. |
+| **Definition of done** | The check that will be run, named. `pnpm check` + `pnpm test` + `pnpm e2e` + the specific assertion this change should make pass. "It works" is not a check. |
+| **Failure modes** | What this change is most likely to break. Name it before starting, because the thing you did not name is the thing that ships. |
+| **Scope** | What is deliberately not being done, so it does not get done by accident on the way past. |
+
+Then follow the factory loop below: measure, read the failure, fix the smallest
+thing, prove it twice, write it down.
+
+Three rules about the rewrite itself:
+
+- **Merged requests split.** "Fix X and also Y and also build Z" is three tickets.
+  Say so, then do the first — one commit per idea is already the standing rule.
+- **Ambiguity is stated, not resolved silently.** "Which of these two did you
+  mean?" costs one turn. Guessing wrong costs the whole change.
+- **The rewrite never adds scope.** It is a restatement, not a proposal; if the
+  restated version contains something the request did not, the restatement is wrong.
+
 ## 1. Prompt first
 
 Every request is rewritten before it is executed. Improve it with the

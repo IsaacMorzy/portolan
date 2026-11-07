@@ -7,6 +7,7 @@ import test from "node:test";
 import { totalCommits } from "../lib/graph/churn.ts";
 import { rateLimit, resetLimits } from "../lib/ratelimit.ts";
 import { formatTour, MAX_TOUR_STEPS, tour } from "../lib/graph/tour.ts";
+import { pythonImports, resolvePython } from "../lib/parser/python.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -244,4 +245,50 @@ test("the rendered tour is readable and numbered", () => {
   const text = formatTour(tour(TOUR_EDGES, "app/route.ts", "follow"));
   assert.match(text, /^app\/route\.ts — what it pulls in/);
   assert.match(text, /\n1\. lib\/handler\.ts\s+@\/lib\/handler:3/);
+});
+
+// --- G5 (#29) Python imports ------------------------------------------------
+
+test("python: plain and aliased imports keep the module, not the alias", () => {
+  const found = pythonImports("import os\nimport a.b as c, d\n");
+  assert.deepEqual(found.map((f) => f.specifier), ["os", "a.b", "d"]);
+});
+
+test("python: from-import keeps the module and drops the names", () => {
+  const found = pythonImports("from .base import Thing\nfrom pkg.sub import (a, b)\n");
+  assert.deepEqual(found.map((f) => f.specifier), [".base", "pkg.sub"]);
+});
+
+test("python: a docstring does not become imports", () => {
+  const source = '"""\nimport notreal\nfrom also.not.real import x\n"""\nimport real\n';
+  assert.deepEqual(pythonImports(source).map((f) => f.specifier), ["real"]);
+});
+
+test("python: comments and __future__ are skipped", () => {
+  const source = "# import commented\nfrom __future__ import annotations\nimport kept\n";
+  assert.deepEqual(pythonImports(source).map((f) => f.specifier), ["kept"]);
+});
+
+test("python: line numbers point at the import, not the file start", () => {
+  const found = pythonImports("\n\nimport late\n");
+  assert.equal(found[0].line, 3);
+});
+
+test("python: absolute specifiers resolve to a module or a package init", () => {
+  const nodes = new Set(["pkg/mod.py", "pkg/__init__.py"]);
+  assert.equal(resolvePython("app/main.py", "pkg.mod", nodes), "pkg/mod.py");
+  assert.equal(resolvePython("app/main.py", "pkg", nodes), "pkg/__init__.py");
+  assert.equal(resolvePython("app/main.py", "missing.mod", nodes), null);
+});
+
+test("python: one dot is this package, two is the parent", () => {
+  const nodes = new Set(["app/base.py", "base.py", "app/sub/x.py"]);
+  assert.equal(resolvePython("app/mod.py", ".base", nodes), "app/base.py");
+  assert.equal(resolvePython("app/sub/mod.py", "..base", nodes), "app/base.py");
+  assert.equal(resolvePython("app/sub/mod.py", "...base", nodes), null, "climbing past the root is not a path");
+});
+
+test("python: `from . import x` resolves to the package, never to an invented module", () => {
+  const nodes = new Set(["pkg/__init__.py", "pkg/deep.py"]);
+  assert.equal(resolvePython("pkg/util.py", ".", nodes), "pkg/__init__.py");
 });

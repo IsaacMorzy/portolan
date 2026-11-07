@@ -125,6 +125,22 @@ without a full type checker). Not a rewrite of the parser.
 **Acceptance.** A Python repository resolves relative and absolute module
 imports, and unresolved ones are counted the same way TypeScript ones are.
 
+**Shipped (`lib/parser/python.ts`).** A line scanner, not an AST: `import a.b as c`
+contributes `a.b`, `from .base import x` keeps its dots, docstrings and comments
+are skipped, and resolution is path arithmetic over the node set
+(`a.b` → `a/b.py` or `a/b/__init__.py`, `..` climbs one directory, climbing to the
+repository root is refused the way Python refuses it).
+
+Two deliberate limits, because a wrong edge is worse than a missing one:
+
+- `from . import x` names the **package**, not `x`'s module. Touching the package
+  is always true; naming the module invents an edge whenever `x` is a name in
+  `__init__.py`.
+- Python imports never reach the TypeScript resolver. `import os` would otherwise
+  be counted as a *Node* builtin — both languages happen to have one — so a wrong
+  answer that looks right. A relative import that misses is reported unresolved,
+  because in-repository that is a real defect; anything else is `external`.
+
 ### G6 — Export and shareable read-only links
 
 **Problem.** The output cannot leave the app. Madge emits DOT, dependency-cruiser

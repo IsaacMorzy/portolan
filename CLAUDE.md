@@ -17,6 +17,14 @@ client, traced with LangSmith. Tailwind v4. pnpm.
 Next.js 16 changed a lot. If you're not certain about an API, read the docs
 inside the installed package rather than going from memory.
 
+## Regenerate the prompt before obeying it
+
+Every request is restated before it is executed: outcome, constraints, definition
+of done, likely failure modes, and what is deliberately out of scope. The
+restatement is shown, so it can be corrected in one line rather than after a
+merge. Merged requests split into separate changes, ambiguity is stated rather
+than guessed, and the rewrite never adds scope the request did not have.
+
 ## How we work
 
 Spec driven. Nothing gets built without a spec.

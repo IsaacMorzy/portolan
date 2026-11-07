@@ -59,13 +59,19 @@ for (const [name, text] of [
 // 3. CLAUDE.md and AGENTS.md are both read by agents. When one gains a rule the
 //    other lacks, the agent that reads the stale one does the wrong thing.
 const claude = existsSync("CLAUDE.md") ? readFileSync("CLAUDE.md", "utf8") : "";
-for (const topic of ["design-system.md", "typeui"]) {
-  if (agents.toLowerCase().includes(topic) !== claude.toLowerCase().includes(topic)) {
-    fail("CLAUDE.md and AGENTS.md agree", `only one mentions "${topic}"`);
-  }
-}
-if (agents.toLowerCase().includes("design-system.md") === claude.toLowerCase().includes("design-system.md")) {
-  pass("CLAUDE.md and AGENTS.md agree", "design system + TypeUI present in both");
+const TOPICS = ["design-system.md", "typeui", "regenerate the prompt"];
+const disagreements = TOPICS.filter(
+  (t) => agents.toLowerCase().includes(t) !== claude.toLowerCase().includes(t),
+);
+// Both missing counts as agreement, which is wrong: a rule nobody carries is not
+// a rule that is aligned, it is a rule that was never written.
+const absent = TOPICS.filter((t) => !agents.toLowerCase().includes(t) && !claude.toLowerCase().includes(t));
+if (disagreements.length > 0) {
+  fail("CLAUDE.md and AGENTS.md agree", `only one carries: ${disagreements.join(", ")}`);
+} else if (absent.length > 0) {
+  fail("both rules files carry the standing rules", `neither carries: ${absent.join(", ")}`);
+} else {
+  pass("CLAUDE.md and AGENTS.md agree", `${TOPICS.length} shared rules`);
 }
 
 // 4. Prompt first. The workflow starts from prompts/NNNN-*.md; a gap in the

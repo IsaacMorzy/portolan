@@ -33,6 +33,9 @@ export type RepositoryIndex = {
 export type Resolver = {
   resolve(fromAbsolute: string, specifier: string, kind: EdgeKind): ImportStatus;
   configs(): ConfigReport[];
+  /** The repository-relative paths that became nodes. Python resolution needs
+   *  them directly: there is no tsconfig or package.json to consult. */
+  nodes(): ReadonlySet<string>;
 };
 
 const CONFIG_NAMES = ["tsconfig.json", "jsconfig.json"];
@@ -212,6 +215,7 @@ export function createResolver(index: RepositoryIndex): Resolver {
   return {
     resolve,
     configs: () => [...reports.values()].sort((a, b) => a.path.localeCompare(b.path)),
+    nodes: () => index.nodes,
   };
 }
 

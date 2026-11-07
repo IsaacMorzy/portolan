@@ -4,6 +4,7 @@ import { Project, ts } from "ts-morph";
 import { extractExports, extractImports } from "./extract.ts";
 import { dedupeEdges, fanCounts } from "./graph.ts";
 import { createResolver } from "./resolve.ts";
+import { isPython, pythonImports, resolvePython } from "./python.ts";
 import {
   SCHEMA_VERSION,
   type Coverage,
@@ -44,7 +45,12 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
     skipFileDependencyResolution: true,
     compilerOptions: { allowJs: true, noLib: true, noResolve: true, types: [] },
   });
-  const sourceFiles = walk.candidates.map((candidate) => ({
+  // Python never reaches ts-morph: it would report a syntax error on the first
+  // line and every import in the repository's scripts folder would vanish.
+  const jsCandidates = walk.candidates.filter((candidate) => !isPython(candidate.path));
+  const pyCandidates = walk.candidates.filter((candidate) => isPython(candidate.path));
+
+  const sourceFiles = jsCandidates.map((candidate) => ({
     candidate,
     sourceFile: project.createSourceFile(candidate.absolutePath, candidate.content, { overwrite: true }),
   }));
@@ -70,7 +76,7 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
 
   const resolver = createResolver({
     root,
-    nodes: new Set(parsed.map((entry) => entry.candidate.path)),
+    nodes: new Set([...parsed.map((entry) => entry.candidate.path), ...pyCandidates.map((c) => c.path)]),
     skipped: new Map(skipped.map((file) => [file.path, file])),
     excludedDirectories: walk.excludedDirectories,
     workspacePackages: walk.workspacePackages,
@@ -87,17 +93,53 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
   const rawEdges: Edge[] = [];
   const exportsOf = new Map<string, string[]>();
 
-  for (const { candidate, sourceFile } of parsed) {
-    exportsOf.set(candidate.path, extractExports(sourceFile));
-    for (const found of extractImports(sourceFile)) {
-      const specifier = found.literal ? found.specifier : found.expression;
-      const outcome: ImportStatus = found.literal
+  // One list, so the coverage counters and the edge list do not care which
+  // language a file is written in. Python has no type-only imports and no
+  // re-exports, so its half of each pair is empty rather than absent.
+  const units = [
+    ...parsed.map(({ candidate, sourceFile }) => ({
+      candidate,
+      imports: extractImports(sourceFile).map((found) => ({
+        kind: found.kind,
+        line: found.line,
+        typeOnly: found.typeOnly,
+        literal: found.literal,
+        specifier: found.literal ? found.specifier : found.expression,
+      })),
+      exports: extractExports(sourceFile),
+    })),
+    ...pyCandidates.map((candidate) => ({
+      candidate,
+      imports: pythonImports(candidate.content).map((found) => ({ ...found })),
+      exports: [] as string[],
+    })),
+  ];
+
+  for (const { candidate, imports, exports: exported } of units) {
+    exportsOf.set(candidate.path, exported);
+    for (const found of imports) {
+      const specifier = found.specifier;
+      const fromPython = isPython(candidate.path);
+      const pyTarget = fromPython ? resolvePython(candidate.path, specifier, resolver.nodes()) : null;
+      // Python is resolved here or not at all. Falling through to the TypeScript
+      // resolver would classify `import os` as a *Node* builtin, because both
+      // languages happen to have a module called os — a wrong answer that looks
+      // like a right one. Relative specifiers that miss are a real defect in the
+      // repository, so they are reported unresolved rather than excused as external.
+      const pythonOutcome: ImportStatus | null = !fromPython
+        ? null
+        : pyTarget !== null
+          ? { status: "internal", target: pyTarget }
+          : specifier.startsWith(".")
+            ? { status: "unresolved", reason: "file-not-found", detail: "no such module in this repository" }
+            : { status: "external", external: "package" };
+      const outcome: ImportStatus = pythonOutcome ?? (found.literal
         ? resolver.resolve(candidate.absolutePath, found.specifier, found.kind)
         : {
             status: "unresolved",
             reason: found.kind === "require" ? "non-literal-require" : "non-literal-dynamic-import",
             detail: "the path is computed at runtime",
-          };
+          });
 
       coverage.total.seen++;
       coverage.byKind[found.kind].seen++;
@@ -137,10 +179,10 @@ export function parseSelection({ root, walk }: Selection): ParseResult {
   }
 
   const edges = dedupeEdges(rawEdges);
-  const paths = parsed.map((entry) => entry.candidate.path);
+  const paths = units.map((unit) => unit.candidate.path);
   const fan = fanCounts(paths, edges);
   const conventions = applyAdapters(walk, parsed, skipped);
-  const files: ParsedFile[] = parsed
+  const files: ParsedFile[] = units
     .map(({ candidate }) => ({
       path: candidate.path,
       module: candidate.module,
