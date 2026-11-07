@@ -12,7 +12,7 @@ type Tally = Status | "stale";
 const TALLY_ORDER: Tally[] = ["running", "queued", "stale", "complete", "failed"];
 
 export default async function DashboardPage() {
-  const { sessionClaims } = await auth();
+  const { sessionClaims, orgId } = await auth();
 
   // Read off the token, never fetched from Clerk. If the claim is missing the
   // session token hasn't been customised yet, and that should be obvious.
@@ -23,7 +23,8 @@ export default async function DashboardPage() {
     );
   }
 
-  const rows = await loadRows();
+  if (!orgId) throw new Error("No active organization on the session token");
+  const rows = await loadRows(orgId);
 
   const counts = new Map<Tally, number>();
   for (const r of rows) {
@@ -92,13 +93,14 @@ export default async function DashboardPage() {
 // Loaded before rendering, and the clock read here: stale and "3m ago" are
 // facts about the moment of the request, worked out once. Nothing ticks in
 // the browser.
-async function loadRows(): Promise<RowData[]> {
-  // No organization filter: the row policy scopes this to the organization on
-  // the token. Switching organization changes the token, not this query.
+async function loadRows(orgId: string): Promise<RowData[]> {
+  // The secret key bypasses row policies, so the workspace boundary is this
+  // filter. Switching organization changes orgId, not the query.
   const supabase = await createServerSupabase();
   const { data: analyses, error } = await supabase
     .from("analyses")
     .select("id, status, stage, stage_message, commit_sha, error, created_at, started_at, finished_at, projects(repo_owner, repo_name)")
+    .eq("organization_id", orgId)
     .order("created_at", { ascending: false })
     .limit(LIST_LIMIT);
   if (error) throw new Error(`Couldn't load analyses: ${error.message}`);

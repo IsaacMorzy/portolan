@@ -1,16 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { env } from "@/lib/env";
-import type { Database } from "./database.types";
+import { createAdminSupabase } from "./admin";
 
-// Every request carries the Clerk session token, so policies can read the
-// organization claim off it. Supabase never owns a session here: passing
-// `accessToken` disables supabase-js's own auth and cookie handling.
-export async function createServerSupabase(): Promise<SupabaseClient<Database>> {
-  const { getToken } = await auth();
-  return createClient<Database>(
-    env("NEXT_PUBLIC_SUPABASE_URL"),
-    env("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
-    { accessToken: async () => (await getToken()) ?? null },
-  );
-}
+// Supabase signed the project's keys with an ES256 key it never exports, so the
+// app can't mint a token PostgREST will accept and row policies can't identify
+// the caller. Reads therefore use the secret key — the same client the pipeline
+// already writes with — which bypasses policies.
+//
+// That moves the workspace boundary into code: every entry point must filter by
+// organization_id before it reads anything else. The policies stay in the
+// migrations as a second line, correct if a user token ever reaches PostgREST.
+export const createServerSupabase = createAdminSupabase;

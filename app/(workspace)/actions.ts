@@ -35,10 +35,17 @@ export async function submitAnalysis(_previous: FormState, form: FormData): Prom
 
 // Re-running is only ever this: a deliberate act from the analysis itself.
 export async function rerunAnalysis(analysisId: string): Promise<FormState> {
-  // Visibility is the policy's call: another organization's analysis isn't
-  // there to re-run. The writer below bypasses policies, so this read comes first.
+  const { orgId } = await auth();
+  if (!orgId) return { error: "No active organization" };
+  // The secret key bypasses policies, so the organization filter is what makes
+  // another organization's analysis not there to re-run.
   const supabase = await createServerSupabase();
-  const { data, error } = await supabase.from("analyses").select("id").eq("id", analysisId).maybeSingle();
+  const { data, error } = await supabase
+    .from("analyses")
+    .select("id")
+    .eq("id", analysisId)
+    .eq("organization_id", orgId)
+    .maybeSingle();
   if (error) throw new Error(`Couldn't read analysis: ${error.message}`);
   if (!data) return { error: "Analysis not found" };
 

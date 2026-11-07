@@ -1,5 +1,6 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { createHash } from "node:crypto";
 import { tracingStatus, type TracingStatus } from "@/lib/ai/client";
 import { classifyFile, explainFile, explainFolder, type Cache } from "@/lib/ai/tasks";
@@ -106,13 +107,17 @@ export async function fileAtHeadAction(analysisId: string, path: string, head: s
   }
 }
 
-// Read under the caller's policies: another organization's analysis isn't
-// there, and nothing after this runs for it.
+// Scoped to the caller's organization. The secret key bypasses row policies, so
+// this is the one gate every action in this file passes through: an analysis
+// from another organization must fail to match here, before anything runs.
 async function readAnalysis(db: Db, analysisId: string): Promise<Analysis> {
+  const { orgId } = await auth();
+  if (!orgId) throw new Error("No active organization");
   const { data, error } = await db
     .from("analyses")
     .select("id, organization_id, status, commit_sha, project:projects(repo_owner, repo_name)")
     .eq("id", analysisId)
+    .eq("organization_id", orgId)
     .maybeSingle();
   if (error) throw new Error(`Reading the analysis failed: ${error.message}`);
   if (!data?.project) throw new Error("Analysis not found");
@@ -128,10 +133,18 @@ async function readAnalysis(db: Db, analysisId: string): Promise<Analysis> {
 // Reads go through the member's client and its policy. Members have no write
 // grant, so answers are stored by the server's writer, stamped with the
 // organization the policy just let the member read.
+// Reads are scoped by organization as well as key: the cache is unique on
+// (organization_id, key), and the read has to match that or it would serve the
+// first organization's body to whoever asked.
 function cacheFor(db: Db, organizationId: string): Cache {
   return {
     async read(key) {
-      const { data, error } = await db.from("ai_cache").select("body").eq("key", key).maybeSingle();
+      const { data, error } = await db
+        .from("ai_cache")
+        .select("body")
+        .eq("organization_id", organizationId)
+        .eq("key", key)
+        .maybeSingle();
       if (error) throw new Error(`Reading the cache failed: ${error.message}`);
       return data?.body ?? null;
     },

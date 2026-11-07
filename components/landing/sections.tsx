@@ -171,7 +171,7 @@ export function Grounding() {
  */
 const TEAM_POINTS = [
   "Every organization gets its own workspace. Analyses, graphs and conversations stay inside the one you're in.",
-  "The isolation is enforced by Postgres row-level security against the organization claim on the session token. The app doesn't filter rows and hope it remembered to.",
+  "Every read is scoped to your organization before it leaves the server, and the row policies that back it up are still in the database. One workspace never sees another's files.",
   "Adding a teammate means inviting them to the workspace, not handing over a database password.",
 ];
 

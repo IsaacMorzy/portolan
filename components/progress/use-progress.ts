@@ -1,58 +1,50 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { progressTopic, type Progress, type Stage, type Status } from "@/lib/pipeline/stages";
-import { useBrowserSupabase } from "@/lib/supabase/browser";
+import type { Progress, Stage, Status } from "@/lib/pipeline/stages";
 
 const STATUSES: readonly Status[] = ["queued", "running", "complete", "failed"];
 const STAGE_NAMES: readonly Stage[] = ["fetch", "select", "parse", "store"];
 
-// Follows one analysis's channel while it's unfinished. Starts from what the
-// server rendered; after joining, reads the row once, because a stage that
-// moved between the render and the join was published to nobody. After that,
-// only the channel, never a poll.
+// Long enough to be one request per stage change, short enough that a stage
+// lands while the person is still looking at it.
+const POLL_MS = 2000;
+
+// Follows one analysis while it's unfinished, starting from what the server
+// rendered. A stage can move between the render and the first poll, so the
+// first poll happens immediately; after that, only this route, never a socket.
 export function useProgress(analysisId: string, initial: Progress) {
-  const supabase = useBrowserSupabase();
   const [progress, setProgress] = useState(initial);
   const [lost, setLost] = useState<string | null>(null);
   const following = progress.status === "queued" || progress.status === "running";
 
   useEffect(() => {
-    if (!supabase || !following) return;
+    if (!following) return;
     let cancelled = false;
-    const channel = supabase
-      .channel(progressTopic(analysisId), { config: { private: true } })
-      .on("broadcast", { event: "progress" }, ({ payload }) => {
-        const next = parseProgress(payload);
-        if (next && !cancelled) setProgress(next);
-      })
-      .subscribe(async (state, error) => {
+
+    const read = async () => {
+      try {
+        const response = await fetch(`/api/progress/${analysisId}`, { cache: "no-store" });
+        if (response.status === 404) throw new Error("This analysis is no longer available");
+        if (!response.ok) throw new Error(`Progress request failed (${response.status})`);
+        const next = parseProgress(await response.json());
         if (cancelled) return;
-        if (state === "SUBSCRIBED") {
-          setLost(null);
-          const { data } = await supabase
-            .from("analyses")
-            .select("status, stage, stage_message, error")
-            .eq("id", analysisId)
-            .maybeSingle();
-          if (!data || cancelled) return;
-          const read: Progress = {
-            status: data.status,
-            stage: data.stage,
-            message: data.status === "failed" ? data.error : data.stage_message,
-          };
-          // Same content keeps the same object, so "unchanged since render" stays true.
-          setProgress((current) => (sameProgress(current, read) ? current : read));
-        } else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT") {
-          // Said out loud: a page that silently stops updating looks like a stuck run.
-          setLost(error?.message ?? state.toLowerCase());
-        }
-      });
+        setLost(null);
+        // Same content keeps the same object, so "unchanged since render" stays true.
+        if (next) setProgress((current) => (sameProgress(current, next) ? current : next));
+      } catch (error) {
+        // Said out loud: a page that silently stops updating looks like a stuck run.
+        if (!cancelled) setLost(error instanceof Error ? error.message : "Lost the connection");
+      }
+    };
+
+    void read();
+    const timer = setInterval(read, POLL_MS);
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      clearInterval(timer);
     };
-  }, [supabase, analysisId, following]);
+  }, [analysisId, following]);
 
   // A re-run was just claimed: follow again from its first stage.
   const restarted = useCallback(() => setProgress({ status: "running", stage: "fetch", message: "Starting" }), []);
