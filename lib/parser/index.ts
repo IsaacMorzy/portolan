@@ -17,6 +17,7 @@ import {
   type StatusCounts,
 } from "./types.ts";
 import type { Role } from "../roles.ts";
+import { placementRole } from "./adapters/conventions.ts";
 import type { AdapterFile } from "./adapters/types.ts";
 import { walkRepository, withinProject, type WalkResult } from "./walk.ts";
 
@@ -242,7 +243,11 @@ function applyAdapters(
       if (candidate.project !== project) continue;
       const file = { path: withinProject(project, candidate.path), source: sourceFile };
       files.push(file);
-      const role = adapter.roleOf(file);
+      // The adapter answers first: it knows a route from a test by convention.
+      // Placement is the fallback, and it answers about the *project-relative*
+      // path — matching repo paths would call `apps/web/lib/db.ts` unknown and
+      // `lib/db.ts` a module for no reason anyone could explain.
+      const role = adapter.roleOf(file) ?? placementRole(file.path);
       if (role) roles.set(candidate.path, role);
     }
     // A declaration file has no runtime code, so it can't hold anything an adapter reads.

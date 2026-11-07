@@ -38,6 +38,7 @@ export const ROLES = [
   { id: "instrumentation", label: "Instrumentation" },
   { id: "config", label: "Config files" },
   { id: "test", label: "Tests" },
+  { id: "script", label: "Scripts" },
 ] as const;
 
 export type Role = (typeof ROLES)[number]["id"];

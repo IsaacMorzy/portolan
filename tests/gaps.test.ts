@@ -11,6 +11,7 @@ import { formatTour, MAX_TOUR_STEPS, tour } from "../lib/graph/tour.ts";
 import { pythonImports, resolvePython } from "../lib/parser/python.ts";
 import { appJwt, appManifest, installUrl } from "../lib/github/app.ts";
 import { mayRead } from "../lib/github/credential.ts";
+import { placementRole } from "../lib/parser/adapters/conventions.ts";
 
 import { cycles } from "../lib/graph/cycles.ts";
 import { diffEdges } from "../lib/graph/diff.ts";
@@ -337,4 +338,14 @@ test("mayRead compares full names, not prefixes or owners", () => {
   assert.equal(mayRead(credential, "isaacmorzy", "CodeGraph"), true, "GitHub names are case-insensitive");
   assert.equal(mayRead(credential, "IsaacMorzy", "codegraph-private"), false, "a prefix is not a member");
   assert.equal(mayRead(credential, "vercel", "codegraph"), false, "the owner alone is not a member");
+});
+
+test("placement classifies by position, and only as a fallback", () => {
+  assert.equal(placementRole("lib/parser/index.ts"), "module");
+  assert.equal(placementRole("src/lib/db.ts"), "module", "a src/ prefix is the same root");
+  assert.equal(placementRole("packages/web/src/a.ts"), "module", "workspace packages too");
+  assert.equal(placementRole("scripts/e2e/audit.mjs"), "script");
+  assert.equal(placementRole("app/page.tsx"), null, "app/ is not a module root");
+  assert.equal(placementRole("libx/a.ts"), null, "libx is not lib");
+  assert.equal(placementRole("components/lib/thing.tsx"), null, "nested lib/ is not a root");
 });
