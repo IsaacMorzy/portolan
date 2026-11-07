@@ -32,7 +32,7 @@ const SECTIONS = [
   { href: "#workflow", label: "How it works", hint: "URL to map, stage by stage", group: "product" },
   { href: "#map", label: "The map", hint: "Blast radius for one file", group: "product" },
   { href: "#pricing", label: "Pricing", hint: "Three plans, and what is shipped", group: "product" },
-  { href: "#compare", label: "Comparison", hint: "Ten tools, four honest losses", group: "product" },
+  { href: "#compare", label: "Comparison", hint: "What other tools do better", group: "product" },
   { href: "#questions", label: "Questions", hint: "What people ask before pasting", group: "product" },
   { href: "#grounding", label: "Evidence", hint: "What every claim cites", group: "trust" },
   { href: "#teams", label: "Teams", hint: "One workspace, one boundary", group: "trust" },
