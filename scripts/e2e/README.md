@@ -41,3 +41,21 @@ pnpm e2e            # landing + audit + budget + both API guards
 pnpm e2e:measure    # the numbers behind the budget
 node scripts/e2e/measure.mjs localhost /,/security
 ```
+
+## Looking at the dashboard
+
+`audit-auth.mjs` proves `/dashboard` answers with one `h1`, named controls and real
+text, and it gets through when the preview deployment is not answering automated
+sign-in with a bot checkpoint. When it is, there is still a way to look:
+
+    PORT=3100 pnpm dev
+    node scripts/e2e/inspector-preview.mjs    # → scripts/e2e/shots/
+
+`app/dev/inspector/page.tsx` renders the **real** `AnalysesTable` and
+`AnalysisInspector` with three fake rows, and calls `notFound()` in production so
+it is not a route anyone can reach. A harness that reimplements the component
+measures the harness; this one imports it.
+
+The script also measures what a screenshot cannot: label/value alignment, panel
+height, whether the panel or the page scrolls, and the set of font sizes the panel
+actually renders — which must stay inside the twelve in `docs/design-system.md` §4.
