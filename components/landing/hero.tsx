@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Marquee } from "@/components/velora/marquee";
+import { CodeBlock } from "@/components/velora/code-block";
 
 /**
  * The hero shows the transformation the product performs rather than a picture
@@ -84,13 +85,14 @@ export function Hero() {
       <figure className="mt-14 overflow-hidden rounded border border-line bg-surface">
         <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           <div className="min-w-0 border-b border-line md:border-b-0 md:border-r">
-            <div className="flex h-8 items-center gap-2 border-b border-line px-3 text-[0.6875rem] text-fg-muted">
-              <span className="size-1.5 rounded-full bg-incoming" aria-hidden="true" />
-              app/api/projects/route.ts
-            </div>
-            <pre className="overflow-x-auto px-4 py-3 font-mono text-[0.6875rem] leading-[1.65] text-fg-muted">
-              <code>{CODE}</code>
-            </pre>
+            <CodeBlock
+              code={CODE}
+              language="ts"
+              filename="app/api/projects/route.ts"
+              lineNumbers
+              highlightLines={[1, 2]}
+              className="rounded-none border-0 [&_pre]:text-[0.6875rem] [&_pre]:leading-[1.65] [&_pre]:py-3"
+            />
           </div>
 
           <div className="blueprint relative min-h-[260px] bg-canvas">

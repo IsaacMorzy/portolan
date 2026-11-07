@@ -1,5 +1,27 @@
 import Link from "next/link";
 import { Globe } from "@/components/velora/globe";
+import { FileTree, type FileNode } from "@/components/velora/file-tree";
+
+// The shape the map indexes, shown as the tree it actually is. Roles are what
+// separate a map from a list of files, so the section names them.
+const REPO_TREE: FileNode[] = [
+  {
+    name: "app",
+    children: [
+      { name: "api", children: [{ name: "projects/route.ts" }, { name: "auth/route.ts" }] },
+      { name: "layout.tsx" },
+      { name: "page.tsx" },
+    ],
+  },
+  {
+    name: "lib",
+    children: [
+      { name: "db", children: [{ name: "client.ts" }, { name: "schema.ts" }] },
+      { name: "session.ts" },
+      { name: "time.ts" },
+    ],
+  },
+];
 
 /**
  * Workflow. Three real stages, in order, so it is marked up as an ordered list
@@ -100,6 +122,14 @@ export function MapSection() {
               ))}
             </tbody>
           </table>
+
+          <div className="mt-8 border-t border-line pt-4">
+            <p className="mb-2 text-[0.75rem] text-fg-muted">
+              Every file in the tree gets a role, so the map says what a module is for, not only what
+              it links to.
+            </p>
+            <FileTree tree={REPO_TREE} className="text-[0.8125rem]" />
+          </div>
         </div>
 
         <div className="order-1 md:order-2">
@@ -171,8 +201,7 @@ export function Grounding() {
  * survives being stated once.
  */
 const TEAM_POINTS = [
-  "Every organization gets its own workspace. Analyses, graphs and conversations stay inside the one you're in.",
-  "Every read is scoped to your organization before it leaves the server, and the row policies that back it up are still in the database. One workspace never sees another's files.",
+  "Every organization gets its own workspace, and every read is scoped to it before the query leaves the server, with row policies in the database behind that. One workspace never sees another's files.",
   "Adding a teammate means inviting them to the workspace, not handing over a database password.",
 ];
 
@@ -258,7 +287,7 @@ export function Footer() {
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-fg-muted">
           <Link href="/sign-in" className="transition-colors hover:text-fg">Sign in</Link>
           <Link href="/sign-up" className="transition-colors hover:text-fg">Create an account</Link>
-          <span className="ml-auto">Explanations grounded in the parsed tree.</span>
+          <span className="ml-auto">TypeScript repositories, parsed rather than guessed.</span>
         </div>
       </div>
     </footer>
