@@ -54,3 +54,9 @@ and it is only worth writing if it changes a check.
 | Raising a token is not raising contrast | applying `--edge` was correct and still unreadable; the token itself was 2.56:1 | measure the pair before the change, not after |
 | A blocked action names its own prerequisite | `bsk step` needs the context from `bsk cooperate sync`; `--context CURRENT` is a different, rejected context | sync first, then act, then verify the state changed (the radio did not move on the first attempt and I nearly reported a dark screenshot of a light page) |
 | Parsed data beats a second implementation | `ParsedFile.role` already held the answer; recomputing roles in a script would have measured a copy | `scripts/unclassified.ts` reads the product's own output |
+
+| Learned | Mechanism | Action taken |
+| --- | --- | --- |
+| A layout constant can drift from the type it measures | `CHAR_WIDTH` said "advance at 11px" while labels had moved to 12px, so every box was sized for text that no longer fit | when a type size changes, the constants that measure it are part of the change — checked in the same commit |
+| A persisted preference can make a screenshot lie | the theme radio stayed on dark, so a shot named `-light` was dark; I renamed it before judging | read the observed radio state before naming an image |
+| Structure beats curves for dependencies | bezier edges were reported as "tangled" twice; smoothstep made the same graph traceable with no change to the data | routing is a readability decision, not a decoration |
