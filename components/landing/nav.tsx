@@ -12,13 +12,14 @@ const SECTIONS = [
   { href: "#workflow", label: "How it works", hint: "URL to map, stage by stage" },
   { href: "#map", label: "The map", hint: "Blast radius for one file" },
   { href: "#grounding", label: "Why it's true", hint: "What every claim cites" },
+  { href: "#pricing", label: "Pricing", hint: "Three plans, and what is actually shipped" },
   { href: "#compare", label: "Compared", hint: "Ten tools, four honest losses" },
   { href: "#teams", label: "Teams", hint: "One workspace, one boundary" },
   { href: "/security", label: "Security", hint: "What is read, who reads it back" },
 ];
 
 // The two that earn their place in the bar; SECTIONS is still the full list.
-const INLINE = SECTIONS.filter((s) => s.href === "#workflow" || s.href === "#map");
+const INLINE = SECTIONS.filter((s) => ["#workflow", "#map", "#pricing"].includes(s.href));
 
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
@@ -66,7 +67,7 @@ export function Nav({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
       <div ref={wrap} className="mx-auto flex h-12 max-w-6xl items-center gap-2 px-6">
         <Link href="/" className="flex items-center gap-2 text-[0.9375rem] font-semibold tracking-tight">
           <Mark className="size-[1.125rem] text-accent" />
-          Cartograph
+          Portolan
         </Link>
 
         {/* Two anchors, not five: "How it works" and "The map" are what a reader

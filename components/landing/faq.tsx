@@ -6,7 +6,7 @@
 const QUESTIONS = [
   {
     q: "Does it need access to my repository?",
-    a: "No token and no OAuth. Cartograph fetches the public default branch as an archive, records the commit it read, and pins the analysis to it. A later run reads the repository again rather than assuming it stayed still.",
+    a: "No token and no OAuth. Portolan fetches the public default branch as an archive, records the commit it read, and pins the analysis to it. A later run reads the repository again rather than assuming it stayed still.",
   },
   {
     q: "What happens to a file the parser can't resolve?",
@@ -22,7 +22,7 @@ const QUESTIONS = [
   },
   {
     q: "Which repositories work?",
-    a: "TypeScript and JavaScript, including the aliases and re-exports that make resolution hard. Conventions for Next.js, React, Express, NestJS and Docusaurus are applied where they change what an import points at; anything else falls back to plain resolution.",
+    a: "TypeScript, JavaScript and Python — Python resolved separately, because it has no type-only imports and no bundler aliases to inherit. The TS/JS side includes the aliases and re-exports that make resolution hard. Conventions for Next.js, React, Express, NestJS and Docusaurus are applied where they change what an import points at; anything else falls back to plain resolution.",
   },
 ];
 

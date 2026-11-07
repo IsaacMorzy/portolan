@@ -12,7 +12,7 @@ import { ImageResponse } from "next/og";
  * the one line under it.
  */
 
-export const alt = "Cartograph — a dependency map of your codebase, parsed not inferred";
+export const alt = "Portolan — a dependency map of your codebase, parsed not inferred";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -34,7 +34,7 @@ export default async function Image() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ width: 34, height: 34, borderRadius: 8, background: "#4f8bff" }} />
-          <div style={{ fontSize: 30, letterSpacing: "-0.01em" }}>Cartograph</div>
+          <div style={{ fontSize: 30, letterSpacing: "-0.01em" }}>Portolan</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

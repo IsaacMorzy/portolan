@@ -57,6 +57,28 @@ If a request spans several lanes, file them all and open the first. Saying so ou
 loud is part of the job: "that is three lanes" is a better answer than three
 half-built lanes.
 
+### 0.3 The name, and what a price may claim
+
+**The product is Portolan.** A portolan chart is the medieval chart that plots
+routes between ports; that is the shape of what this tool draws — modules as
+ports, resolved imports as routes. It was `Cartograph` until the name was
+researched against registries (`portolan`: ~156 GitHub repositories and one stale
+npm package, against 10,670 for `tessera`) and replaced on every public surface.
+The repository is still `codegraph`; the deploy host is still
+`codegraph-navy.vercel.app`. Renaming those is a migration, not a copy edit, and
+is not done.
+
+**A price may name only what exists, or be labelled `in build`.** `#pricing`
+lists plans whose rows are either shipped or carry that label in the row itself,
+and the section says billing is not switched on. A plan that sells a feature the
+code does not have is a refund with a delay, and the honesty is the marketing.
+
+**A vendored block brings structure, never a palette.** Velora and TypeUI blocks
+are imported for their layout (a comparison table, a footer bar, a code panel) and
+their colours are replaced with the tokens in `docs/design-system.md`. A block that
+arrives with its own `--primary` or gradient is a second design system, and
+`scripts/check/design.mjs` refuses it.
+
 ### 0.1 The prompt file comes before the first edit
 
 Written down here because it was skipped: a session began editing on the first
@@ -211,9 +233,11 @@ two disagree the repo wins — and that disagreement is a bug in one of them, so
 say which rather than quietly picking.
 
 The MCP (`https://mcp.typeui.sh`) is **authenticated in hermes** — 24 tools,
-OAuth, no API key. It must authenticate per client, and pi cannot (no OAuth
-command in `free-pi-cli`), which is why the vendored skill stays the default path
-here: it works in all three, offline, with no session to expire.
+OAuth, no API key. It authenticates per client, and pi *can* complete that flow:
+an HTTP server in `mcp.json` may carry an `oauth` block, and pi runs the browser
+handshake itself (pi's own MCP guide, section "Authenticate with OAuth"). The earlier note here said pi could not, and that was
+wrong. The vendored skill is still the default path because it works offline in
+all three harnesses with no session to expire — a preference, not a limitation.
 
 Re-authenticate with `hermes mcp login typeui`, or `opencode mcp auth typeui`.
 The listener binds `127.0.0.1:<port>` and the consent page sits behind a Vercel
@@ -304,7 +328,7 @@ One browser driver is live; the rest sit disabled until the task needs them.
 | `httpstatus` | off | SSL, CORS, redirect chains, HAR. Off because it wants an API key; a server that 401s every call is worse than one that is visibly off. |
 | `typeui` | on in hermes | Hosted design-system MCP at `https://mcp.typeui.sh`, OAuth (no API key). **24 tools** once authenticated: account, design-system install, section-prompt generation, and site insights. Use it to start a *different* product or to shape a surface that does not exist yet — never to regenerate this one, because `docs/design-system.md` is the source of truth and generation would trade specificity for plausibility. Full tool map and the split-by-question table: `docs/design-system.md` §11. |
 | `typeui` (opencode) | awaiting authorize | `opencode mcp auth typeui` starts its own PKCE flow. |
-| `typeui` (pi) | can't complete | `free-pi-cli` has no OAuth command, so the flow has nowhere to finish. The vendored `typeui-fundamentals` skill is the path there. |
+| `typeui` (pi) | works, unused | pi supports MCP OAuth (its MCP guide, "Authenticate with OAuth"), so `mcp.json` can carry the `oauth` block. The vendored `typeui-fundamentals` skill is still preferred here: offline, no session to expire. |
 | `puppeteer`, `playwright` | off | Third and fourth browser drivers. They were already in the global config; three drivers for one job is how you get three answers. |
 
 Refused, with reasons: **`x64dbgMCP`** debugs Windows native binaries and this is

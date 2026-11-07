@@ -65,7 +65,11 @@ export function FoldedNodeView({ id, data }: NodeProps<FoldedNode>) {
       style={{ paddingInline: PAD_X }}
     >
       <Handle type="target" position={Position.Left} className={anchor} isConnectable={false} />
-      <span className="truncate font-mono text-xs leading-4 text-fg">{data.label}</span>
+      {/* Not truncated. A folded label is one directory name, and a name cut to
+          "(workspac…" is a box that hides the only thing it was drawn to say. The
+          box is sized from this same label, so the room exists; `truncate` was
+          shrinking to a width the layout never promised. */}
+      <span className="whitespace-nowrap font-mono text-xs leading-4 text-fg">{data.label}</span>
       <Meta
         fileCount={data.fileCount}
         fanIn={data.fanIn}

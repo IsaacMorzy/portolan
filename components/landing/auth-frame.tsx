@@ -21,7 +21,7 @@ export function AuthFrame({
       <header className="mx-auto flex h-12 w-full max-w-6xl items-center px-6">
         <Link href="/" className="flex items-center gap-2 text-[0.9375rem] font-semibold tracking-tight">
           <Mark className="size-[1.125rem] text-accent" />
-          Cartograph
+          Portolan
         </Link>
         <Link
           href="/"

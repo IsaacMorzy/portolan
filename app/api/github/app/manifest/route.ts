@@ -52,11 +52,11 @@ export async function GET() {
   const origin = process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://codegraph-navy.vercel.app";
   const manifest = appManifest(
     { redirectUrl: `${origin}/api/github/app/callback`, setupUrl: `${origin}/dashboard?installed=1` },
-    "cartograph",
+    "portolan",
   );
 
   // The name is only a suggestion: GitHub requires uniqueness per account, so a
-  // second workspace gets cartograph-2 and nobody has to pick it.
+  // second workspace gets portolan-2 and nobody has to pick it.
   const action = `https://github.com/settings/apps/new?state=${encodeURIComponent(nonce)}`;
 
   return new NextResponse(

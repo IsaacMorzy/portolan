@@ -7,9 +7,9 @@ import { FooterColumns } from "@/components/velora/footer-columns";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "How reads are scoped — Cartograph",
+  title: "How reads are scoped — Portolan",
   description:
-    "What Cartograph reads from a repository, where the AI runs, and how every query is narrowed to your organization before it leaves the server.",
+    "What Portolan reads from a repository, where the AI runs, and how every query is narrowed to your organization before it leaves the server.",
 };
 
 // The four doors into workspace data. Named individually because a security

@@ -1,5 +1,5 @@
 {
-  "name": "cartograph",
+  "name": "portolan",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
     "insights": "node scripts/insights.ts",
     "analyze": "node --env-file=.env.local scripts/analyze.ts",
     "test": "node --test \"tests/*.test.ts\"",
-    "cartograph": "node scripts/cartograph.ts",
+    "portolan": "node scripts/portolan.ts",
     "e2e": "node scripts/e2e/landing.mjs && node scripts/e2e/audit.mjs && node scripts/e2e/budget.mjs && node scripts/e2e/api-graph.mjs && node scripts/e2e/api-churn.mjs",
     "e2e:sign-in": "node --env-file=.env.local scripts/e2e/sign-in.mjs",
     "e2e:shots": "node scripts/e2e/screenshots.mjs",

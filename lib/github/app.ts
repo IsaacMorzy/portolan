@@ -80,7 +80,7 @@ export async function exchangeManifestCode(code: string): Promise<
       method: "POST",
       headers: {
         Accept: "application/vnd.github+json",
-        "User-Agent": "cartograph",
+        "User-Agent": "portolan",
         "X-GitHub-Api-Version": "2022-11-28",
       },
     },
@@ -148,7 +148,7 @@ export async function installationToken(
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${appJwt(appId, pem)}`,
-        "User-Agent": "cartograph",
+        "User-Agent": "portolan",
         "X-GitHub-Api-Version": "2022-11-28",
       },
     },
@@ -172,7 +172,7 @@ export async function installationRepositories(token: string): Promise<string[] 
     headers: {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${token}`,
-      "User-Agent": "cartograph",
+      "User-Agent": "portolan",
       "X-GitHub-Api-Version": "2022-11-28",
     },
   });

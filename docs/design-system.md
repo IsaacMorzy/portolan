@@ -10,6 +10,11 @@ the reasoning. Where they disagree, the CSS wins and this file is wrong — fix 
 
 ## 1. What this product is
 
+**Portolan** — renamed from Cartograph after a registry check. The name is a *portolan
+chart*: the medieval chart that plotted routes between ports, which is the shape of
+this tool. The product reads **TypeScript, JavaScript and Python**, and every public
+sentence must say so.
+
 A map of a codebase, for a person deciding whether a change is safe. That single
 sentence settles every layout question below. The reader is looking at **code
 they did not write**, trying to answer **"what breaks if I touch this."**
@@ -173,9 +178,11 @@ previous one needs space instead.
   feedback. A section sliding in is decoration.
 - **No scroll-triggered reveals.** The reader scrolled; they already know
   something changed.
-- **No looping animation**, with one sanctioned exception: the hero globe, which
-  is a demonstration of the product, not an ornament, and stops under
-  `prefers-reduced-motion`.
+- **No looping animation**, with two sanctioned exceptions, both demonstrations of
+  the product rather than ornaments, both removed under `prefers-reduced-motion`:
+  the hero globe, and the hero map's packet — one import travelling along one edge.
+  A loop that says something the product does is allowed; a loop that fills space
+  is not.
 - `prefers-reduced-motion` disables all of the above. Every time.
 
 ## 8. The don'ts
@@ -274,4 +281,4 @@ the audit. Run it before believing any generated UI.
 |---|---|
 | hermes | **on** — authenticated, 24 tools |
 | opencode | configured, awaiting its own authorize |
-| pi | disabled — `free-pi-cli` exposes no OAuth command, so the flow cannot complete. The vendored skill is the path there. |
+| pi | available, unused — pi supports MCP OAuth (`pi` docs, "Authenticate with OAuth"), so `mcp.json` can carry an `oauth` block. The vendored skill remains preferred: offline, no expiring session. |

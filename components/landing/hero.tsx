@@ -69,8 +69,8 @@ export function Hero() {
           See what your code depends on.
         </h1>
         <p className="mt-5 max-w-[46ch] text-[0.9375rem] leading-relaxed text-fg-muted">
-          Cartograph parses a TypeScript repository into a map of modules and the edges between them,
-          then explains each one using only the code it actually read.
+          Portolan reads a repository — TypeScript, JavaScript or Python — into a map of modules and the
+          imports between them, then explains each with only the code it actually parsed.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
           <Link href="/sign-up" className="flex h-8 items-center rounded bg-accent px-3.5 text-xs font-medium text-accent-fg">
@@ -117,6 +117,18 @@ export function Hero() {
                     {/* Drawn, not a marker: markers inherit stroke units and render
                         inconsistently at this scale. */}
                     <path d={`M${x2} ${y2} l-6 -2.6 v5.2 z`} style={{ fill: "var(--edge)" }} />
+                    {/* One packet per edge, offset so they leave in sequence. This is
+                        the product's claim drawn: an import leaves one module and
+                        arrives at another. Motion stops under reduced-motion, so the
+                        dashed edges alone still read as direction. */}
+                    <circle r="1.9" className="packet">
+                      <animateMotion
+                        dur="4.2s"
+                        begin={`${(x1 % 9) * 0.35}s`}
+                        repeatCount="indefinite"
+                        path={`M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`}
+                      />
+                    </circle>
                   </g>
                 );
               })}

@@ -110,6 +110,14 @@ body {
   }
 }
 
+/* The hero's packet: a dot travelling one import edge. Sanctioned by §7 because it
+   is a demonstration (an import leaving one module and arriving at another), not an
+   ornament, and it is removed outright under reduced-motion — the dashed edges keep
+   the direction on their own. */
+.packet {
+  fill: var(--accent);
+}
+
 .flow-edge {
   stroke-dasharray: 3 5;
   animation: flow 2.4s linear infinite;
@@ -130,10 +138,27 @@ body {
   mask-image: radial-gradient(ellipse 75% 70% at 50% 45%, black 40%, transparent 100%);
 }
 
+/* React Flow's attribution stays (MIT requires it) but must not be clipped by the
+   rounded corner it is parked against. Its default 10px link is also below the
+   readable floor, so it is set in the muted token at the smallest size §4 allows. */
+.react-flow__attribution {
+  right: 8px;
+  bottom: 6px;
+}
+
+.react-flow__attribution a {
+  font-size: 0.6875rem;
+  color: var(--fg-muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flow-edge,
   .rise {
     animation: none;
+  }
+
+  .packet {
+    display: none;
   }
 }
 

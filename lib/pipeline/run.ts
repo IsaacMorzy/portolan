@@ -5,7 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseSelection, selectFiles } from "../parser/index.ts";
 import { SCHEMA_VERSION } from "../parser/types.ts";
 import type { Database, Enums } from "../supabase/database.types.ts";
-import { downloadArchive, resolveHeadCommit, type Repository } from "./github.ts";
+import { downloadArchive, PipelineError, resolveHeadCommit, type Repository } from "./github.ts";
+import { installationCredential, mayRead } from "../github/credential.ts";
 import { STALE_AFTER_MS } from "./stages.ts";
 import { storeResult, storedCoverage } from "./store.ts";
 
@@ -37,16 +38,28 @@ export async function continueRun(db: Db, claimed: ClaimedRun): Promise<void> {
   const { analysisId, organizationId, repository } = claimed;
   let workdir: string | null = null;
   try {
-    workdir = await mkdtemp(path.join(tmpdir(), "cartograph-"));
+    workdir = await mkdtemp(path.join(tmpdir(), "portolan-"));
+    // The token comes from the workspace the analysis belongs to, never from the
+    // request: a browser cannot choose which installation a clone is fetched with.
+    // A missing installation is not an error — public repositories are read the
+    // same way they always were, and the reason is kept for the row's message.
+    const credential = await installationCredential(organizationId);
+    const token = credential.ok ? credential.credential.token : undefined;
+    if (credential.ok && !mayRead(credential.credential, repository.owner, repository.name)) {
+      throw new PipelineError(
+        `${repository.owner}/${repository.name} is not in this workspace's GitHub App installation, so it cannot be read with the installation token.`,
+      );
+    }
+
     await enter(db, claimed, "fetch", `Resolving the latest commit of ${repository.owner}/${repository.name}`);
-    const sha = await resolveHeadCommit(repository);
+    const sha = await resolveHeadCommit(repository, token);
     await update(db, claimed, {
       commit_sha: sha,
       stage_message: `Downloading ${repository.owner}/${repository.name} at ${sha.slice(0, 7)}`,
     });
-    await downloadArchive(repository, sha, workdir);
+    await downloadArchive(repository, sha, workdir, token);
 
-    await enter(db, claimed, "select", "Walking the repository for TypeScript and JavaScript files");
+    await enter(db, claimed, "select", "Selecting the TypeScript, JavaScript and Python files to parse");
     const selection = selectFiles(workdir);
 
     const { candidates, skipped } = selection.walk;

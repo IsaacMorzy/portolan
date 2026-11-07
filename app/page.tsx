@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { Hero } from "@/components/landing/hero";
 import { Nav } from "@/components/landing/nav";
 import { Compare } from "@/components/landing/compare";
+import { Pricing } from "@/components/landing/pricing";
 import { Questions } from "@/components/landing/faq";
 import { Value } from "@/components/landing/value";
 import { Close, Grounding, MapSection, Teams, Workflow } from "@/components/landing/sections";
@@ -11,11 +12,11 @@ import { FooterColumns } from "@/components/velora/footer-columns";
 import { parseTheme, THEME_COOKIE } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "Cartograph — dependency maps of your codebase",
+  title: "Portolan — dependency maps of your codebase",
   description:
-    "Cartograph parses a TypeScript repository into a map of modules and the edges between them, then explains each one using only the code it actually read.",
+    "Portolan parses a TypeScript repository into a map of modules and the edges between them, then explains each one using only the code it actually read.",
   openGraph: {
-    title: "Cartograph — dependency maps of your codebase",
+    title: "Portolan — dependency maps of your codebase",
     description:
       "Parse a repository into a map of modules and edges, follow the blast radius of a change, and read explanations grounded in the parsed tree.",
     type: "website",
@@ -35,11 +36,11 @@ export default async function LandingPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Cartograph",
+    name: "Portolan",
     applicationCategory: "DeveloperApplication",
     operatingSystem: "Web",
     description:
-      "Parses a TypeScript repository into a map of modules and the edges between them, then explains each one using only the code it read.",
+      "Parses TypeScript, JavaScript and Python into a map of modules and the imports between them, then explains each one using only the code it read.",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     url: "https://codegraph-navy.vercel.app/",
   };
@@ -55,6 +56,7 @@ export default async function LandingPage() {
         <MapSection />
         <Grounding />
         <Compare />
+        <Pricing />
         <Teams />
         <Questions />
         <Close signedIn={signedIn} />

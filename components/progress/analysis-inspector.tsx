@@ -84,7 +84,7 @@ export function AnalysisInspector({ row, onClose }: { row: RowData; onClose: () 
       {row.repository && row.progress.status === "complete" && (
         <div className="px-3 pb-3">
           <CodeBlock
-            code={`npx cartograph tour . --mode surface`}
+            code={`npx portolan tour . --mode surface`}
             language="bash"
             filename="the same graph, from a terminal"
             lineNumbers={false}

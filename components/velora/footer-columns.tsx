@@ -9,7 +9,7 @@ import { Mark } from "@/components/landing/mark";
  * is the block's, and it is what a site with more than one page needs.
  */
 const TAGLINE =
-  "Cartograph draws a TypeScript repository as a map of modules. Every edge is an import the parser resolved, and every claim cites a file it read.";
+  "Portolan draws a TypeScript repository as a map of modules. Every edge is an import the parser resolved, and every claim cites a file it read.";
 
 const COLUMNS = [
   {
@@ -18,6 +18,7 @@ const COLUMNS = [
       { label: "How it works", href: "/#workflow" },
       { label: "The map", href: "/#map" },
       { label: "Why it's true", href: "/#grounding" },
+      { label: "Pricing", href: "/#pricing" },
       { label: "Teams", href: "/#teams" },
     ],
   },
@@ -49,14 +50,14 @@ export function FooterColumns() {
             type as the page's last gesture. Opacity, not a second colour, so it
             stays quiet in both themes. */}
         <p className="mb-12 text-[3.5rem] leading-none font-semibold tracking-[-0.045em] opacity-20 select-none md:text-[5rem]">
-          Cartograph
+          Portolan
         </p>
 
         <div className="grid gap-10 md:grid-cols-[minmax(0,1.3fr)_minmax(0,2fr)] md:gap-16">
           <div>
             <Link href="/" className={`inline-flex items-center gap-2 text-[0.9375rem] font-semibold tracking-tight ${focusRing}`}>
               <Mark className="size-[1.125rem] text-accent" />
-              Cartograph
+              Portolan
             </Link>
             <p className="mt-4 max-w-[38ch] text-[0.8125rem] leading-relaxed text-pretty text-fg-muted">
               {TAGLINE}
@@ -85,7 +86,7 @@ export function FooterColumns() {
         </div>
 
         <div className="mt-12 flex flex-col-reverse gap-3 border-t border-line pt-6 text-[0.75rem] text-fg-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getUTCFullYear()} Cartograph</p>
+          <p>© {new Date().getUTCFullYear()} Portolan</p>
           <p>Analyses are pinned to a commit. A repository that moves on is re-read, not guessed at.</p>
         </div>
       </div>

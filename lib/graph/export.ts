@@ -14,7 +14,7 @@ function nodes(edges: readonly Edge[]): string[] {
 }
 
 export function toDot(edges: readonly Edge[]): string {
-  const lines = ["digraph cartograph {", "  rankdir=LR;", "  node [shape=box, fontname=\"monospace\"];"];
+  const lines = ["digraph portolan {", "  rankdir=LR;", "  node [shape=box, fontname=\"monospace\"];"];
   for (const node of nodes(edges)) lines.push(`  "${node}";`);
   for (const e of [...edges].sort((a, b) => a.source.localeCompare(b.source) || a.target.localeCompare(b.target))) {
     // Type-only edges are dashed: they break the build, not the runtime.

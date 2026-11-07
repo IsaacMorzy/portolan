@@ -7,7 +7,7 @@ has a reason.
 
 ## Positioning
 
-> **Cartograph maps a TypeScript repository from what the parser resolved, then
+> **Portolan maps a TypeScript repository from what the parser resolved, then
 > explains it without inventing anything.** Paste a public URL, get the module
 > graph and the blast radius of any file, and read an explanation whose every
 > claim points at a file that exists.
@@ -79,7 +79,7 @@ resolve says so in the result rather than rendering an empty list.
 a graph and nothing to enforce with it.
 
 **What.** Cycle detection over the parsed graph, and a rules file
-(`cartograph.rules.json`) with `allow`/`deny` between folders, checked in CI via
+(`portolan.rules.json`) with `allow`/`deny` between folders, checked in CI via
 one CLI command.
 
 **Acceptance.** A synthetic cycle is reported with the exact path, and an
@@ -229,7 +229,7 @@ silently truncates is a lie.
 Proved on this repository:
 
 ```
-$ cartograph tour . app/api/graph/route.ts --depth 2
+$ portolan tour . app/api/graph/route.ts --depth 2
 app/api/graph/route.ts — what it pulls in, in reading order
 
 1. app/(workspace)/analyses/[id]/actions.ts  @/app/(workspace)/analyses/[id]/actions:6

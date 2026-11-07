@@ -7,6 +7,19 @@ the parser found, it never decides what's there.
 Why any of these rules exist is in `docs/project-doc.md`. This file is the
 rules themselves.
 
+## The name, and what a price may claim
+
+**The product is Portolan** (renamed from Cartograph): a portolan chart plots routes
+between ports, which is the shape of this tool — modules as ports, resolved imports
+as routes. The repository stays `codegraph`; renaming it is a migration.
+
+**A price may name only what exists, or carry `in build` in the row itself.** The
+`#pricing` table marks unbuilt rows and says billing is not switched on.
+
+**A vendored block brings structure, never a palette.** Velora / TypeUI layouts are
+imported for their composition; their colours become the tokens in
+`docs/design-system.md`. A second palette is a second design system.
+
 ## Stack
 
 Next.js 16 App Router, React 19, TypeScript strict. ts-morph for parsing. React

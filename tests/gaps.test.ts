@@ -300,7 +300,7 @@ test("python: `from . import x` resolves to the package, never to an invented mo
 // --- G1 (#27) GitHub App ------------------------------------------------
 
 test("manifest asks for read-only contents and nothing else", () => {
-  const manifest = appManifest({ redirectUrl: "https://x/api", setupUrl: "https://x/d" }, "cartograph");
+  const manifest = appManifest({ redirectUrl: "https://x/api", setupUrl: "https://x/d" }, "portolan");
   assert.deepEqual(manifest.default_permissions, { contents: "read", metadata: "read" });
   assert.equal(manifest.public, false);
   // A webhook endpoint that does not exist yet would be retried forever.
@@ -329,7 +329,7 @@ test("the App JWT verifies against its own public key", () => {
 });
 
 test("the install URL carries the workspace, encoded", () => {
-  assert.equal(installUrl("cartograph", "org_1/2"), "https://github.com/apps/cartograph/installations/new?state=org_1%2F2");
+  assert.equal(installUrl("portolan", "org_1/2"), "https://github.com/apps/portolan/installations/new?state=org_1%2F2");
 });
 
 test("mayRead compares full names, not prefixes or owners", () => {

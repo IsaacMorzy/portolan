@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   // metadataBase makes every relative URL below absolute; without it Next warns
   // and social cards resolve against localhost.
   metadataBase: new URL("https://codegraph-navy.vercel.app"),
-  title: "Cartograph",
+  title: "Portolan",
   // 45 characters was a label, not a description: it said what the category is
   // without saying what the reader gets. scripts/e2e/audit.mjs fails a page
   // whose description is under 60, which is the length a search result shows.
@@ -38,16 +38,16 @@ export const metadata: Metadata = {
   // if that file is ever renamed.
   alternates: { canonical: "/" },
   openGraph: {
-    siteName: "Cartograph",
+    siteName: "Portolan",
     type: "website",
     url: "/",
-    title: "Cartograph — see what your code depends on",
+    title: "Portolan — see what your code depends on",
     description: "Every edge resolved by the parser, every explanation cited to a file it actually read.",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Cartograph" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Portolan" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cartograph — see what your code depends on",
+    title: "Portolan — see what your code depends on",
     description: "Every edge resolved by the parser, every explanation cited to a file it actually read.",
   },
   robots: { index: true, follow: true },

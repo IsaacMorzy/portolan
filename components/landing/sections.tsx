@@ -33,7 +33,7 @@ const REPO_TREE: FileNode[] = [
 const STEPS = [
   {
     title: "Point it at a repository",
-    body: "Paste a public GitHub URL. Cartograph clones the default branch at a pinned commit and reads it as a tree, not as text.",
+    body: "Paste a public GitHub URL. Portolan clones the default branch at a pinned commit and reads it as a tree, not as text.",
   },
   {
     title: "The parser walks the imports",
@@ -71,9 +71,9 @@ export function Workflow() {
               not a diagram invented for the marketing page. */}
           <div className="mt-8 min-w-0">
             <CodeBlock
-              filename="cartograph run"
+              filename="portolan run"
               language="bash"
-              code={`$ cartograph analyze https://github.com/acme/web
+              code={`$ portolan analyze https://github.com/acme/web
 
 fetch    archive at 7f2c1ab          4.1 MB
 select   1,204 files, 812 sources
@@ -162,7 +162,7 @@ export function MapSection() {
             Change one file, see everything it touches
           </h2>
           <p className="mt-4 max-w-[46ch] text-[0.9375rem] leading-relaxed text-fg-muted">
-            Every edge has a direction. Pick a module and Cartograph splits its neighbours into the
+            Every edge has a direction. Pick a module and Portolan splits its neighbours into the
             ones that import it and the ones it imports, so a refactor starts from the real blast
             radius instead of a search box and a hunch.
           </p>

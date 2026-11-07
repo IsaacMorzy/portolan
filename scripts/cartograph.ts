@@ -1,9 +1,9 @@
 // The graph, outside the app.
 //
-//   node scripts/cartograph.ts cycles  <dir>
-//   node scripts/cartograph.ts rules   <dir> [--rules cartograph.rules.json]
-//   node scripts/cartograph.ts export  <dir> [--format dot|mermaid] [--from file --depth n]
-//   node scripts/cartograph.ts diff    <before.json> <after.json>
+//   node scripts/portolan.ts cycles  <dir>
+//   node scripts/portolan.ts rules   <dir> [--rules portolan.rules.json]
+//   node scripts/portolan.ts export  <dir> [--format dot|mermaid] [--from file --depth n]
+//   node scripts/portolan.ts diff    <before.json> <after.json>
 //
 // cycles and rules exit 1 when they find something, so CI can fail on them.
 // export prints to stdout so it pipes into dot, a gist, or a README.
@@ -48,7 +48,7 @@ function main(argv: string[]): void {
 
   if (!command || !target) {
     console.error(
-      "usage: cartograph cycles <dir> | rules <dir> [--rules f.json] | export <dir> [--format dot|mermaid] [--from f --depth n] | diff <a.json> <b.json> | tour <dir> <file> [--mode follow|surface] [--depth n]",
+      "usage: portolan cycles <dir> | rules <dir> [--rules f.json] | export <dir> [--format dot|mermaid] [--from f --depth n] | diff <a.json> <b.json> | tour <dir> <file> [--mode follow|surface] [--depth n]",
     );
     process.exit(2);
   }
@@ -65,7 +65,7 @@ function main(argv: string[]): void {
   }
 
   if (command === "rules") {
-    const file = flag(argv, "--rules") ?? "cartograph.rules.json";
+    const file = flag(argv, "--rules") ?? "portolan.rules.json";
     const rules = parseRules(JSON.parse(readFileSync(file, "utf8")));
     const violations = checkRules(edgesOf(target), rules);
     if (violations.length === 0) {
@@ -95,7 +95,7 @@ function main(argv: string[]): void {
   if (command === "diff") {
     const after = args[2];
     if (!after) {
-      console.error("diff needs two files: cartograph diff <before.json> <after.json>");
+      console.error("diff needs two files: portolan diff <before.json> <after.json>");
       process.exit(2);
     }
     const d = diffEdges(edgesOf(target), edgesOf(after));
@@ -109,7 +109,7 @@ function main(argv: string[]): void {
   if (command === "tour") {
     const [, dir, file] = args;
     if (!dir || !file) {
-      console.error("usage: cartograph tour <dir> <file> [--mode follow|surface] [--depth n]");
+      console.error("usage: portolan tour <dir> <file> [--mode follow|surface] [--depth n]");
       process.exit(2);
     }
     const modeAt = argv.indexOf("--mode");

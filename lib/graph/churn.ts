@@ -36,7 +36,7 @@ export async function countChurn(
   const url = `${GITHUB}/repos/${repository.owner}/${repository.name}/commits?path=${encodeURIComponent(path)}&per_page=1`;
   const headers: Record<string, string> = {
     accept: "application/vnd.github+json",
-    "user-agent": "cartograph",
+    "user-agent": "portolan",
   };
   const token = process.env.GITHUB_TOKEN?.trim();
   if (token) headers.authorization = `Bearer ${token}`;

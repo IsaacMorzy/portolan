@@ -50,13 +50,21 @@ export function parseRepositoryUrl(input: string): Repository {
   return { owner: owner.toLowerCase(), name: name.toLowerCase() };
 }
 
+// A token is optional everywhere: public reads work without one. An installation
+// token buys the private path and a much higher rate limit, and it is minted from
+// the workspace, never from the request that started the run.
+function authHeaders(token: string | undefined, extra: Record<string, string> = {}): Record<string, string> {
+  return { "User-Agent": "portolan", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
+}
+
 // The commit is resolved first and the archive fetched at exactly that commit,
 // so the recorded sha is the code that was parsed, not whatever HEAD became
-// while the download ran. Unauthenticated: no token is asked for or stored.
-export async function resolveHeadCommit({ owner, name }: Repository): Promise<string> {
+// while the download ran. Unauthenticated unless the workspace has an
+// installation: no token is asked for or stored here.
+export async function resolveHeadCommit({ owner, name }: Repository, token?: string): Promise<string> {
   const response = await withTimeout(`Asking GitHub for ${owner}/${name}'s latest commit`, API_TIMEOUT_MS, () =>
     fetch(`https://api.github.com/repos/${owner}/${name}/commits/HEAD`, {
-      headers: { Accept: "application/vnd.github.sha", "User-Agent": "cartograph" },
+      headers: authHeaders(token, { Accept: "application/vnd.github.sha" }),
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     }),
   );
@@ -82,12 +90,12 @@ export async function resolveHeadCommit({ owner, name }: Repository): Promise<st
 // One file's bytes at one commit, or null when the file isn't there at that
 // commit. raw.githubusercontent.com serves the committed bytes, so their
 // sha256 is comparable with the hash the parser stored.
-export async function fetchFileAt({ owner, name }: Repository, sha: string, filePath: string): Promise<Buffer | null> {
+export async function fetchFileAt({ owner, name }: Repository, sha: string, filePath: string, token?: string): Promise<Buffer | null> {
   const what = `Fetching ${filePath} from ${owner}/${name} at ${sha.slice(0, 7)}`;
   const encoded = filePath.split("/").map(encodeURIComponent).join("/");
   const response = await withTimeout(what, API_TIMEOUT_MS, () =>
     fetch(`https://raw.githubusercontent.com/${owner}/${name}/${sha}/${encoded}`, {
-      headers: { "User-Agent": "cartograph" },
+      headers: authHeaders(token),
       signal: AbortSignal.timeout(API_TIMEOUT_MS),
     }),
   );
@@ -99,12 +107,12 @@ export async function fetchFileAt({ owner, name }: Repository, sha: string, file
 // Streams the archive straight into the directory, dropping GitHub's
 // "<owner>-<name>-<sha>/" wrapper folder. tar refuses absolute paths and "..",
 // so nothing lands outside it.
-export async function downloadArchive({ owner, name }: Repository, sha: string, directory: string): Promise<number> {
+export async function downloadArchive({ owner, name }: Repository, sha: string, directory: string, token?: string): Promise<number> {
   const what = `Downloading the archive for ${owner}/${name}`;
   // One signal for the request and the body, so the limit is on the whole download.
   const signal = AbortSignal.timeout(ARCHIVE_TIMEOUT_MS);
   const response = await withTimeout(what, ARCHIVE_TIMEOUT_MS, () =>
-    fetch(`https://codeload.github.com/${owner}/${name}/tar.gz/${sha}`, { headers: { "User-Agent": "cartograph" }, signal }),
+    fetch(`https://codeload.github.com/${owner}/${name}/tar.gz/${sha}`, { headers: authHeaders(token), signal }),
   );
   if (!response.ok || !response.body) {
     throw new PipelineError(`Downloading the archive for ${owner}/${name} failed: GitHub answered ${response.status}`);
