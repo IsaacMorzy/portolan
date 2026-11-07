@@ -132,7 +132,11 @@ function MapCanvas({
           style: {
             // Thickness says how many imports one line stands for, gently.
             strokeWidth: Math.min(2.5, 0.75 + Math.log2(e.count) / 3),
-            stroke,
+            // React Flow's default edge colour is a hard-coded grey that knows
+            // nothing about the theme. An edge with no selection on it is a
+            // normal edge, so it gets the token rather than the library's idea
+            // of grey — the same reason no component here ships a raw hex.
+            stroke: stroke ?? "var(--edge)",
             opacity: (lit && !stroke) || outOfFocus ? 0.15 : 1,
           },
         });
