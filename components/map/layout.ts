@@ -9,7 +9,9 @@ export const PAD_X = 10;
 export const FOLDED_MIN_HEIGHT = 40;
 export const FOLDED_MIN_WIDTH = 120;
 export const PANEL_HEADER_HEIGHT = 40;
-export const ROW_HEIGHT = 20;
+// 24, not 20: a 12px row label in a 20px box is cramped, and 24 is on the 4pt
+// rhythm the design system uses everywhere else.
+export const ROW_HEIGHT = 24;
 const ROW_NUMBERS_WIDTH = 84; // swatch, gaps and the fan counts
 const PANEL_MIN_WIDTH = 200;
 const PANEL_MAX_WIDTH = 440;
@@ -43,7 +45,11 @@ export function sizeOf(o: MapObject): { width: number; height: number } {
 // so the same data and the same open set give the same picture.
 export function layout(objects: readonly MapObject[], edges: readonly MapEdge[]): Map<string, Box> {
   const g = new dagre.graphlib.Graph<{ rankdir: "LR"; nodesep: number; ranksep: number }, { width: number; height: number; x?: number; y?: number }, object>();
-  g.setGraph({ rankdir: "LR", nodesep: 16, ranksep: 72 });
+  // nodesep is vertical distance between nodes in the same rank. 16 packed them
+  // into columns that edge bundles then crossed; 28 is one step of breathing room,
+  // paid for in canvas width, which is checked against a screenshot rather than
+  // assumed to be better.
+  g.setGraph({ rankdir: "LR", nodesep: 28, ranksep: 72 });
   g.setDefaultEdgeLabel(() => ({}));
   for (const o of objects) g.setNode(o.id, sizeOf(o));
   // Several row-level lines between the same two objects are one constraint

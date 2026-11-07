@@ -2,6 +2,7 @@
 
 import {
   Background,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   getViewportForBounds,
@@ -234,6 +235,21 @@ function MapCanvas({
               any edge, so it never competes with the data it is there to help
               read. Its colour is a token, so it follows the theme like the rest. */}
           <Background color="var(--line)" gap={22} size={1} />
+          {/* Direction is the fact this screen claims and the hardest to see: an
+              arrowhead would say it per line, but this version's Edge marker type
+              is a string while the renderer wants an object, and a cast to force
+              it is a lie the compiler stops checking. A key is the honest
+              substitute — it names the two colours the graph already uses. */}
+          <Panel position="bottom-left" className="pointer-events-none flex items-center gap-3 text-xs text-fg-muted">
+            <span className="flex items-center gap-1.5">
+              <span aria-hidden="true" className="h-px w-4" style={{ background: "var(--outgoing)" }} />
+              imports out
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span aria-hidden="true" className="h-px w-4" style={{ background: "var(--incoming)" }} />
+              imported by
+            </span>
+          </Panel>
         </ReactFlow>
       </MapSelection.Provider>
       </div>

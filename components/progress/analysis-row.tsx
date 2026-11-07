@@ -44,7 +44,7 @@ export function AnalysisRow({
         selected ? "bg-raised" : ""
       }`}
     >
-      <td className="truncate px-3 py-1.5 font-mono">
+      <td className="truncate px-3 py-1 font-mono">
         <button type="button" className="block w-full text-left" aria-pressed={selected}>
           {row.repository ? (
             <>
@@ -61,7 +61,7 @@ export function AnalysisRow({
           )}
         </button>
       </td>
-      <td className="px-3 py-1.5">
+      <td className="px-3 py-1">
         <span className={`flex items-center gap-1.5 ${progress.status === "queued" ? "text-fg-muted" : "text-fg"}`}>
           <StateMark status={progress.status} stale={stale} />
           {stale ? "stale" : progress.status}
@@ -70,15 +70,15 @@ export function AnalysisRow({
           )}
         </span>
       </td>
-      <td className="hidden px-3 py-1.5 font-mono text-fg-muted sm:table-cell">
+      <td className="hidden px-3 py-1 font-mono text-fg-muted sm:table-cell">
         {row.commitSha ? <span title={row.commitSha}>{row.commitSha.slice(0, 7)}</span> : "—"}
       </td>
-      <td className="px-3 py-1.5 text-right text-fg-muted tabular-nums">
+      <td className="px-3 py-1 text-right text-fg-muted tabular-nums">
         <time dateTime={row.created.iso} title={row.created.iso}>
           {row.created.ago}
         </time>
       </td>
-      <td className="hidden px-3 py-1.5 text-right text-fg-muted tabular-nums sm:table-cell">
+      <td className="hidden px-3 py-1 text-right text-fg-muted tabular-nums sm:table-cell">
         {row.finished ? (
           <time dateTime={row.finished.iso} title={row.finished.iso}>
             {row.finished.ago}

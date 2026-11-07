@@ -156,7 +156,7 @@ export function PanelNodeView({ id, data }: NodeProps<PanelNode>) {
                 onMouseLeave={() => hover(null)}
                 title={row.path}
                 aria-pressed={rowSelected}
-                className={`flex size-full items-center gap-[6px] text-left text-[11px] ${
+                className={`flex size-full items-center gap-[6px] text-left text-xs ${
                   rowSelected ? "bg-accent/15 shadow-[inset_2px_0_0_var(--accent)]" : "hover:bg-raised"
                 } ${rowHovered ? HOVER_RING : anyLit && !lit(row.path) ? DIM : ""}`}
                 style={{ paddingInline: PAD_X }}
