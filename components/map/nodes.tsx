@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position, useUpdateNodeInternals, type Node, type NodeProps } from "@xyflow/react";
-import { createContext, useContext, useEffect, useRef, type WheelEvent } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type WheelEvent } from "react";
 import { categoryOf } from "@/lib/graph/categories";
 import { endpointKey, type CategoryFocus, type Highlight, type Selection } from "@/lib/graph/highlight";
 import { ABOVE_HANDLE, BELOW_HANDLE, MAX_ROWS, type FoldedObject, type PanelObject } from "@/lib/graph/view";
@@ -110,6 +110,24 @@ export function PanelNodeView({ id, data }: NodeProps<PanelNode>) {
     scroll(id, data.offset + rows);
   }
 
+  // Churn: commits touching this folder in the last 90 days, fetched on demand.
+  const [churn, setChurn] = useState<{ commits: number; since: string } | null>(null);
+  useEffect(() => {
+    // Only fetch for module roots (lib/, src/lib/, packages/*/src/).
+    const isModuleRoot = /^(lib|src\/lib|src\/modules|packages\/[^/]+\/src)(\/|$)/.test(data.dir);
+    if (!isModuleRoot || !data.analysisId) return;
+    void (async () => {
+      const res = await fetch("/api/churn", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ analysisId: data.analysisId, moduleRoot: data.dir }),
+      });
+      if (!res.ok) return;
+      const json = (await res.json()) as { commits?: number; since?: string };
+      if (json.commits !== undefined) setChurn({ commits: json.commits, since: json.since ?? "" });
+    })();
+  }, [data.dir, data.analysisId]);
+
   return (
     <div
       className={`flex size-full flex-col overflow-hidden rounded-[4px] border-line bg-surface ${
@@ -128,6 +146,13 @@ export function PanelNodeView({ id, data }: NodeProps<PanelNode>) {
         style={{ height: PANEL_HEADER_HEIGHT, paddingInline: PAD_X }}
       >
         <span className="truncate font-mono text-xs leading-4 font-semibold text-fg">{data.label}</span>
+        {churn !== null && (
+          <span className="flex items-center gap-[4px] text-[11px] text-fg-muted">
+            <span title={`${churn.commits} commits touching ${data.dir} since ${churn.since}`}>
+              {churn.commits}Δ
+            </span>
+          </span>
+        )}
         <Meta
           fileCount={data.fileCount}
           fanIn={data.fanIn}

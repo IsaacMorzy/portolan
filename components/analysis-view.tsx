@@ -193,6 +193,7 @@ export function AnalysisView({
                 hover={hover}
                 refit={refit}
                 category={category}
+                analysisId={analysisId}
                 onOpen={openGroup}
                 onClose={closeGroup}
                 onSelectFile={toggleFile}

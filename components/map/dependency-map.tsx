@@ -52,6 +52,9 @@ export type MapControl = {
   folding: Folding;
   /** Open groups and how far each has been scrolled. */
   open: ReadonlyMap<string, number>;
+  /** The analysis id, for module churn lookups. */
+  analysisId: string;
+  /** Selection, hover, callbacks... */
   selection: Selection;
   /** Whatever the pointer is over, here or in the pane. */
   hover: Selection;
@@ -85,6 +88,7 @@ function MapCanvas({
   hover,
   refit,
   category,
+  analysisId,
   onOpen,
   onClose,
   onSelectFile,
@@ -92,7 +96,7 @@ function MapCanvas({
   onHover,
   onDeselect,
 }: MapControl) {
-  const view = useMemo(() => buildView(files, edges, folding, open), [files, edges, folding, open]);
+  const view = useMemo(() => buildView(files, edges, folding, open, analysisId), [files, edges, folding, open, analysisId]);
   const boxes = useMemo(() => layout(view.objects, view.edges), [view]);
   const lit = useMemo(() => highlightFor(view, edges, selection), [view, edges, selection]);
   const hovered = useMemo(() => hoverEndpoint(view, hover), [view, hover]);

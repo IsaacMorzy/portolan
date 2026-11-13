@@ -17,7 +17,7 @@ if (!file) {
 
 const { files, edges } = deserializeParseResult(readFileSync(file, "utf8"));
 const folding = foldDirectories(files);
-const folded = buildView(files, edges, folding, new Map());
+const folded = buildView(files, edges, folding, new Map(), "");
 const ids = new Set(folded.objects.map((o) => o.id));
 
 const single = folding.groups.filter((g) => g.files.length < 2);
@@ -31,7 +31,7 @@ console.log(`3. Edges ${folded.edges.length}, ending on a missing node: ${dangli
 // Same checks with every group open, scrolled to the top and to the bottom, so
 // the rows and the above/below handles are exercised too.
 for (const [where, offset] of [["top", 0], ["bottom", Number.MAX_SAFE_INTEGER]] as const) {
-  const all = buildView(files, edges, folding, new Map(folding.groups.map((g) => [groupId(g.dir), offset])));
+  const all = buildView(files, edges, folding, new Map(folding.groups.map((g) => [groupId(g.dir), offset])), "");
   const handles = new Set<string>();
   for (const o of all.objects) {
     if (o.kind !== "panel") continue;

@@ -14,7 +14,7 @@ export const BELOW_HANDLE = "v";
 
 export type Row = { path: string; label: string; fanIn: number; fanOut: number };
 
-type Common = { id: string; dir: string; label: string; fileCount: number; fanIn: number; fanOut: number };
+type Common = { id: string; dir: string; label: string; fileCount: number; fanIn: number; fanOut: number; analysisId: string };
 export type FoldedObject = Common & { kind: "folded" };
 export type PanelObject = Common & {
   kind: "panel";
@@ -64,6 +64,8 @@ export function buildView(
   folding: Folding,
   /** Open groups, each with its scroll offset. Clamped here, so any number is safe. */
   open: ReadonlyMap<string, number>,
+  /** The analysis id, passed to module nodes so they can fetch churn. */
+  analysisId: string,
 ): MapView {
   const byPath = new Map(files.map((f) => [f.path, f]));
   const fan = groupFan(folding, edges);
@@ -88,6 +90,7 @@ export function buildView(
       fileCount: g.files.length,
       fanIn: fan.get(g.dir)?.fanIn ?? 0,
       fanOut: fan.get(g.dir)?.fanOut ?? 0,
+      analysisId,
     };
     const w = windows.get(g.dir);
     if (!w) return { ...common, kind: "folded" };
