@@ -4,6 +4,8 @@ import { ai, model, modelId } from "@/lib/ai/client";
 import { rateLimit, LIMITS } from "@/lib/ratelimit.ts";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { parseDiff } from "@/lib/parser/diff.ts";
+import { checkRules, parseRules, type Rules } from "@/lib/graph/rules.ts";
+import type { EdgeKind } from "@/lib/parser/types.ts";
 
 // T1 — manual API-triggered review of one PR diff.
 //
@@ -20,6 +22,7 @@ type Body = {
   analysisId: string;
   diff: string;
   prNumber?: number;
+  rules?: unknown;
 };
 
 const EXPLAIN_SYSTEM = `You review a pull request diff against a parsed dependency graph.
@@ -49,6 +52,7 @@ export async function reviewAnalysis(
   analysisId: string,
   diff: string,
   prNumber: number | null,
+  rules?: unknown,
 ): Promise<ReviewResult> {
   // Parse the diff into changed files.
   const changedFiles = parseDiff(diff.slice(0, MAX_DIFF_CHARS));
@@ -63,14 +67,54 @@ export async function reviewAnalysis(
     .eq("analysis_id", analysisId)
     .is("skip_reason", null);
   if (filesError) throw new Error(filesError.message);
-  const pathOf = new Map(files.map((f) => [f.path, f.id]));
-  const fileIds = new Set(files.map((f) => f.id));
+  const idToPath = new Map<string, string>();
+  for (const f of files) idToPath.set(f.id, f.path);
 
   const { data: edges, error: edgesError } = await db
     .from("edges")
-    .select("source_file_id, target_file_id, kind, specifier, line")
+    .select("source_file_id, target_file_id, kind, type_only, specifier, line")
     .eq("analysis_id", analysisId);
   if (edgesError) throw new Error(edgesError.message);
+
+  // Run configured rules over every edge; violations become review comments.
+  const ruleComments: Array<{ file: string; line: number | null; body: string }> = [];
+  let parsedRules: Rules | null = null;
+  if (rules !== undefined) {
+    try {
+      parsedRules = parseRules(rules);
+    } catch {
+      // Malformed rule config is not a crash — it is reported as one comment
+      // so the reviewer knows the config itself needs fixing.
+      ruleComments.push({
+        file: "",
+        line: null,
+        body: "Rule config could not be parsed — check its syntax.",
+      });
+    }
+  }
+
+  if (parsedRules) {
+    // Edges from Supabase use source_file_id/target_file_id; checkRules wants
+    // Edge-shaped { source, target, kind, typeOnly, specifier, line }. Map once.
+    const ruleEdges = edges.map((e) => ({
+      source: idToPath.get(e.source_file_id) ?? e.source_file_id,
+      target: idToPath.get(e.target_file_id) ?? e.target_file_id,
+      kind: e.kind as EdgeKind,
+      typeOnly: e.type_only,
+      specifier: e.specifier,
+      line: e.line,
+    }));
+    const violations = checkRules(ruleEdges, parsedRules);
+    for (const v of violations) {
+      const sourcePath = idToPath.get(v.source) ?? v.source;
+      const targetPath = idToPath.get(v.target) ?? v.target;
+      ruleComments.push({
+        file: sourcePath,
+        line: null,
+        body: `Rule violation (${v.rule}): ${sourcePath} → ${targetPath}${v.why ? ` — ${v.why}` : ""}.`,
+      });
+    }
+  }
 
   // For each changed file, collect the edges that touch it (source or target).
   const edgesByFile = new Map<string, Array<{ kind: string; specifier: string; line: number; isSource: boolean }>>();
@@ -127,6 +171,10 @@ export async function reviewAnalysis(
       comments.push({ file: c.file ?? cf.path, line: c.line ?? null, body: c.body ?? "" });
     }
   }
+
+  // Rule violations are comments too — they are flagged, not blocked, so a
+  // misconfigured rule never stops a review from completing.
+  comments.push(...ruleComments);
 
   // Write the review + comments to Supabase.
   const now = new Date().toISOString();
@@ -208,7 +256,7 @@ export async function POST(request: Request): Promise<Response> {
 
   let result: ReviewResult;
   try {
-    result = await reviewAnalysis(db, orgId, analysisId, diff, body.prNumber ?? null);
+    result = await reviewAnalysis(db, orgId, analysisId, diff, body.prNumber ?? null, body.rules);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }

@@ -66,6 +66,29 @@ async function getPullDiff(
   return (await response.text()).slice(0, 120_000);
 }
 
+/** Fetch the in-repo rule config (.portolan/rules.json) from GitHub. */
+async function getRepoRules(
+  token: string,
+  fullName: string,
+): Promise<unknown> {
+  const [owner, repo] = fullName.split("/");
+  const response = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/.portolan/rules.json`, {
+    headers: {
+      Accept: "application/vnd.github.raw",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "portolan",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response.ok) return null; // No rule config — that is fine, rules are optional.
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null; // Malformed JSON — reviewAnalysis will report it.
+  }
+}
+
 /** Find the latest complete analysis for this org's repo, project-first. */
 async function findLatestAnalysisByRepo(
   db: ReturnType<typeof createAdminSupabase>,
@@ -163,9 +186,10 @@ export async function POST(request: Request): Promise<Response> {
   // Mint an installation token and fetch the PR diff.
   const token = await getInstallationToken(app.app_id, app.private_key, installationId);
   const diff = await getPullDiff(token, fullName, prNumber);
+  const rules = await getRepoRules(token, fullName);
 
   // Trigger the review — same core logic as the manual API route.
-  const result = await reviewAnalysis(db, app.organization_id, analysisId, diff, prNumber);
+  const result = await reviewAnalysis(db, app.organization_id, analysisId, diff, prNumber, rules);
 
   return NextResponse.json({
     accepted: true,
