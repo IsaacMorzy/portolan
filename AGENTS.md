@@ -45,6 +45,19 @@ Three rules about the rewrite itself:
 - **The rewrite never adds scope.** It is a restatement, not a proposal; if the
   restated version contains something the request did not, the restatement is wrong.
 
+### Pi context before you start
+
+Before restating, load durable context from `~/.pi/agent/pi-hermes-memory/`
+(`MEMORY.md`, `USER.md`, `data.json`) — memory mode is **policy-only**, full style,
+with 5000-char limits, review enabled, and auto-consolidate on. Anything decided
+here gets written back to memory (target `memory` for global, `project` for
+codegraph-scoped) so the next session starts informed. Report agent state
+(working/blocked/idle) via the `herdr-agent-state.ts` extension when
+`HERDR_ENV=1` is set; it is a no-op otherwise. The pi supervision runtime
+(`pi-herdsman`, build v0.46.0, role `lead`) tracks the current session — the
+codegraph repo is trusted in `trust.json`. If the current model is struggling,
+rotate with `~/.pi/agent/bin/cline-rotate next`.
+
 ### The lane
 
 Work arrives through a map, never as a bullet in a transcript. The shape is Matt
@@ -105,6 +118,12 @@ Every request is rewritten before it is executed. Improve it with the
 build. The file records the ask verbatim, the reading chosen, what is out of
 scope, and how the result will be checked. See `prompts/README.md`.
 
+When a decision is durable (a convention, a preference, a failure mode, or a
+tool quirk), write it to `~/.pi/agent/pi-hermes-memory/` — target `memory` for
+global notes, `project` for codegraph-scoped decisions. Memory is policy-only
+(full style, 5000-char limit, review on, auto-consolidate on); a decision that
+is not written to memory is a decision the next session re-discovers.
+
 Shorthand executed verbatim is how a repo fills with features nobody asked for.
 
 ## 2. Map it
@@ -119,7 +138,11 @@ Run `wayfinder` before writing code on anything larger than a single file:
   named. It is never faked.
 
 Issues go to GitHub on `IsaacMorzy/codegraph`; the map issue is labelled
-`wayfinder:map` and links its children.
+`wayfinder:map` and links its children. The pi supervision runtime
+(`pi-herdsman`) tracks the session under `~/.pi/agent/pi-herdsman/runtime/`
+(peer correspondences, coordinators, supervision-v2) — a lane is not started
+until the measurement that justifies it exists, and it is not closed until a
+named check passes.
 
 ## 3. Build it
 
@@ -132,6 +155,11 @@ Issues go to GitHub on `IsaacMorzy/codegraph`; the map issue is labelled
 
 A shortcut with a known ceiling gets a `ponytail:` comment naming the ceiling.
 
+When simplifying, reach for the pi simplification extensions before
+hand-rolling: `pi-simplify`, `pi-deltabox`, `pi-straw-boss`, `pi-background-tasks`,
+`pi-loop`, `pi-acp`, and `pi-durable-subagents` are installed. If the model is
+struggling, rotate with `~/.pi/agent/bin/cline-rotate next`.
+
 ## 4. Check it
 
 Non-trivial logic leaves one runnable check behind (`pnpm test`, `node --test`,
@@ -139,10 +167,25 @@ no framework). UI work is screenshotted at 1440 light, 1440 dark and 390 and
 looked at before it is called done. The build, the type check and the linter
 must pass; a failing check is reported, never weakened.
 
+Before any change that touches auth, secrets, rate limits, or entry points,
+check `~/.pi/agent/extensions/pi-permission-system/logs/
+pi-permission-system-permission-review.jsonl` for prior permission review
+decisions — the permission system logs config resolution and review events
+there. Vision is enabled (cline provider, nemotron model, audit log on) — use
+it to verify screenshots rather than assuming.
+
+The build, the type check and the linter must pass; a failing check is
+reported, never weakened.
+
 ## 5. Report it
 
 Say what shipped, what was skipped and why, and what is blocked on whom. One
 line of status at the end that is not a summary of the summary.
+
+When a phase closes, write the decision to `~/.pi/agent/pi-hermes-memory/`
+(target `memory` for global, `project` for codegraph-scoped) and cite the
+commit SHA in the issue comment. A closed lane with no memory entry and no
+commit citation is not closed.
 
 
 ## The factory
@@ -315,6 +358,9 @@ that table, do it without a skill and write down what you learned.
 | `npx tsc --noEmit`, `npx eslint .` | Non-negotiable before any claim of done. |
 | `node --test` | The test runner. No jest, no vitest, no framework. |
 | `curl` | Verifying a deployed header or status. `--max-redirs 0`, or you will measure the redirect target and believe you measured the route. |
+| `~/.pi/agent/bin/pi` | The pi agent itself. |
+| `~/.pi/agent/bin/cline-rotate` | Rotate/switch cline free models when the current model struggles (`next`, `current`, `list`, `test`). |
+| `~/.pi/agent/bin/rg` / `~/.pi/agent/bin/fd` | Fast code search (ripgrep / fd). |
 
 ### MCP
 
@@ -341,6 +387,24 @@ google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/codegraph-debug
 
 Config lives in `~/.config/opencode/opencode.json`,
 `~/.free-pi/agent/mcp.json` and `~/.hermes/profiles/<profile>/config.yaml`.
+
+### Pi extensions
+
+Pi loads extensions from `~/.pi/agent/extensions/` and runs them inside the Pi
+process with the same OS permissions. Loaded extensions are part of the
+workflow, not optional extras — know what each one does before relying on it.
+
+| Extension | What it does | Workflow integration |
+| --- | --- | --- |
+| `herdr-agent-state.ts` | Reports agent state (working/blocked/idle) to herdr via Unix socket, keyed on `HERDR_ENV`/`HERDR_SOCKET_PATH`/`HERDR_PANE_ID`. Emits on `session_start`, `agent_start`, `agent_settled`. | Confirms a session is alive and reporting state before starting a lane. If `HERDR_ENV` is not `1`, it is a no-op. |
+| `pi-permission-system` | Logs permission review decisions to `extensions/pi-permission-system/logs/pi-permission-system-permission-review.jsonl`. Resolves config from global then project paths. | Before any gate-relevant change (auth, secrets, ratelimit), check the permission log for prior review decisions. |
+| `pi-herdsman` | Supervision runtime (build v0.46.0, role `lead`). Maintains peer correspondences, coordinators, and supervision-v2 state under `~/.pi/agent/pi-herdsman/runtime/`. | The codegraph repo is trusted (`trust.json` lists it). A lead coordinator instance tracks the current pi session. |
+
+CLI binaries in `~/.pi/agent/bin/`: `pi` (the pi agent itself), `cline-rotate` (rotate/switch cline free models), `rg` (ripgrep), `fd` (fd find). Use `cline-rotate next/list/test` when the current model is struggling; `rg` and `fd` for fast code search.
+
+Memory is `policy-only` (full style, 5000-char limits, review enabled, auto-consolidate on) at `~/.pi/agent/pi-hermes-memory/`. Project memory lives under `projects-memory/`. Update both `memory` (target=memory) and `project` (target=project) scopes when a decision is durable.
+
+Trust is per-directory in `trust.json`; `/home/sage/Documents/frontend/nextjs/codegraph` is trusted. Vision is enabled (cline provider, nemotron model, audit log on) — screenshots and image reads go through it.
 
 ### Hooks: what fails automatically
 
