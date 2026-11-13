@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { ai, model, modelId, traceConfig } from "@/lib/ai/client";
+import { ai, model, modelId } from "@/lib/ai/client";
 import { rateLimit, LIMITS } from "@/lib/ratelimit.ts";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { parseDiff } from "@/lib/parser/diff.ts";
@@ -8,7 +8,7 @@ import { parseDiff } from "@/lib/parser/diff.ts";
 // T1 — manual API-triggered review of one PR diff.
 //
 // Accepts an analysis id and a unified diff, runs the diff against the
-// parsed dependency graph, asks the model to comment on the changed files,
+// parsed dependency graph, asks the model to comment on each changed file,
 // and writes the review + comments to Supabase.
 //
 // The review layer is scoped like every other entry point: the caller's
@@ -36,54 +36,24 @@ Use line null when the comment is about the file as a whole.`;
 /** The largest diff we send to the model — a backstop against runaway prompts. */
 const MAX_DIFF_CHARS = 120_000;
 
-export async function POST(request: Request): Promise<Response> {
-  const { orgId } = await auth();
-  if (!orgId) return NextResponse.json({ error: "No active organization" }, { status: 401 });
+export type ReviewResult = {
+  reviewId: string;
+  commentCount: number;
+  comments: Array<{ file: string; line: number | null; body: string }>;
+};
 
-  let body: Body;
-  try {
-    body = (await request.json()) as Body;
-  } catch {
-    return NextResponse.json({ error: "Body must be JSON" }, { status: 400 });
-  }
-
-  const { analysisId, diff } = body;
-  if (!analysisId || typeof analysisId !== "string") {
-    return NextResponse.json({ error: "analysisId is required" }, { status: 400 });
-  }
-  if (!diff || typeof diff !== "string") {
-    return NextResponse.json({ error: "diff is required" }, { status: 400 });
-  }
-
-  const limited = rateLimit(`review:${orgId}`, LIMITS.graph);
-  if (!limited.ok) {
-    return NextResponse.json(
-      { error: "Too many requests" },
-      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
-    );
-  }
-
-  const db = await createServerSupabase();
-
-  // The analysis must exist, belong to this org, and be complete.
-  const { data: analysis, error: analysisError } = await db
-    .from("analyses")
-    .select("id, status, organization_id")
-    .eq("id", analysisId)
-    .eq("organization_id", orgId)
-    .maybeSingle();
-  if (analysisError) return NextResponse.json({ error: analysisError.message }, { status: 500 });
-  if (!analysis || analysis.status !== "complete") {
-    return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
-  }
-
+/** The core review logic, shared by the manual API route and the webhook. */
+export async function reviewAnalysis(
+  db: ReturnType<typeof createServerSupabase>,
+  orgId: string,
+  analysisId: string,
+  diff: string,
+  prNumber: number | null,
+): Promise<ReviewResult> {
   // Parse the diff into changed files.
   const changedFiles = parseDiff(diff.slice(0, MAX_DIFF_CHARS));
   if (changedFiles.length === 0) {
-    return NextResponse.json(
-      { reviewId: null, comments: [], message: "No changed files found in diff" },
-      { status: 200 },
-    );
+    return { reviewId: null as unknown as string, commentCount: 0, comments: [] };
   }
 
   // Load the stored analysis: files + edges.
@@ -92,7 +62,7 @@ export async function POST(request: Request): Promise<Response> {
     .select("id, path, skip_reason")
     .eq("analysis_id", analysisId)
     .is("skip_reason", null);
-  if (filesError) return NextResponse.json({ error: filesError.message }, { status: 500 });
+  if (filesError) throw new Error(filesError.message);
   const pathOf = new Map(files.map((f) => [f.path, f.id]));
   const fileIds = new Set(files.map((f) => f.id));
 
@@ -100,7 +70,7 @@ export async function POST(request: Request): Promise<Response> {
     .from("edges")
     .select("source_file_id, target_file_id, kind, specifier, line")
     .eq("analysis_id", analysisId);
-  if (edgesError) return NextResponse.json({ error: edgesError.message }, { status: 500 });
+  if (edgesError) throw new Error(edgesError.message);
 
   // For each changed file, collect the edges that touch it (source or target).
   const edgesByFile = new Map<string, Array<{ kind: string; specifier: string; line: number; isSource: boolean }>>();
@@ -165,8 +135,8 @@ export async function POST(request: Request): Promise<Response> {
     .insert({
       organization_id: orgId,
       analysis_id: analysisId,
-      pr_number: body.prNumber ?? 0,
-      repo_owner: "", // filled by caller later if needed
+      pr_number: prNumber ?? 0,
+      repo_owner: "",
       repo_name: "",
       status: "complete",
       error: null,
@@ -175,7 +145,7 @@ export async function POST(request: Request): Promise<Response> {
     })
     .select("id")
     .single();
-  if (reviewError) return NextResponse.json({ error: reviewError.message }, { status: 500 });
+  if (reviewError) throw new Error(reviewError.message);
 
   const reviewId = review.id;
   if (comments.length > 0) {
@@ -189,14 +159,65 @@ export async function POST(request: Request): Promise<Response> {
         created_at: now,
       })),
     );
-    if (commentsError) return NextResponse.json({ error: commentsError.message }, { status: 500 });
+    if (commentsError) throw new Error(commentsError.message);
+  }
+
+  return { reviewId, commentCount: comments.length, comments };
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const { orgId } = await auth();
+  if (!orgId) return NextResponse.json({ error: "No active organization" }, { status: 401 });
+
+  let body: Body;
+  try {
+    body = (await request.json()) as Body;
+  } catch {
+    return NextResponse.json({ error: "Body must be JSON" }, { status: 400 });
+  }
+
+  const { analysisId, diff } = body;
+  if (!analysisId || typeof analysisId !== "string") {
+    return NextResponse.json({ error: "analysisId is required" }, { status: 400 });
+  }
+  if (!diff || typeof diff !== "string") {
+    return NextResponse.json({ error: "diff is required" }, { status: 400 });
+  }
+
+  const limited = rateLimit(`review:${orgId}`, LIMITS.graph);
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests" },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
+    );
+  }
+
+  const db = await createServerSupabase();
+
+  // The analysis must exist, belong to this org, and be complete.
+  const { data: analysis, error: analysisError } = await db
+    .from("analyses")
+    .select("id, status, organization_id")
+    .eq("id", analysisId)
+    .eq("organization_id", orgId)
+    .maybeSingle();
+  if (analysisError) return NextResponse.json({ error: analysisError.message }, { status: 500 });
+  if (!analysis || analysis.status !== "complete") {
+    return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
+  }
+
+  let result: ReviewResult;
+  try {
+    result = await reviewAnalysis(db, orgId, analysisId, diff, body.prNumber ?? null);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 
   return NextResponse.json({
-    reviewId,
+    reviewId: result.reviewId,
     analysisId,
     prNumber: body.prNumber ?? null,
-    commentCount: comments.length,
-    comments,
+    commentCount: result.commentCount,
+    comments: result.comments,
   });
 }
