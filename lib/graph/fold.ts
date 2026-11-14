@@ -3,8 +3,10 @@
 // folders matter is picked in advance.
 
 export const MAX_GROUPS = 24;
-/** "Fewer than a couple of files" is the starting rule. */
-const START_THRESHOLD = 2;
+/** Directories with fewer than this many files fold into their parent. Five
+ * keeps small modules grouped while letting larger directories stay as
+ * separate nodes on the map. */
+const START_THRESHOLD = 5;
 
 export type Group = {
   /** The surviving directory, repository-relative. "." for the root. */
