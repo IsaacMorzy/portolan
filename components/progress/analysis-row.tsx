@@ -80,7 +80,7 @@ export function AnalysisRow({
           {row.created.ago}
         </time>
       </td>
-      <td className="hidden px-3 py-1 text-right text-fg-muted tabular-nums md:table-cell">
+      <td className="px-3 py-1 text-right text-fg-muted tabular-nums">
         {row.took ?? "—"}
       </td>
       <td className="hidden px-3 py-1 text-right text-fg-muted tabular-nums sm:table-cell">
