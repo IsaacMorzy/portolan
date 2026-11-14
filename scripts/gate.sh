@@ -48,6 +48,9 @@ fi
 printf '==> deps-rules\n'
 node --experimental-strip-types scripts/deps-rules.ts
 
+printf '==> cycle-enforcement\n'
+node --experimental-strip-types scripts/cycle-enforcement.ts
+
 # PageProps and LayoutProps are generated, not written by anyone: Next emits them
 # (and next-env.d.ts, which is gitignored) from the route tree. A checkout that
 # has never run a build therefore has no such globals, and tsc fails on three
