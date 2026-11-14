@@ -1,0 +1,11 @@
+{
+  "name": "portolan-graph-app",
+  "description": "Portolan GitHub App for reading private repositories",
+  "public": false,
+  "default_permissions": {
+    "contents": "read",
+    "metadata": "read"
+  },
+  "default_events": ["push", "pull_request"],
+  "webhook_url": "https://codegraph-navy.vercel.app/api/github/webhook"
+}
