@@ -7,15 +7,15 @@ import type { MapEdge, MapObject } from "@/lib/graph/view";
 // Advance of Geist Mono at the size labels are actually drawn at. This said 11px
 // while labels moved to 12px in 1b96191, so every box was measured for text that
 // no longer fit it — the kind of drift a comment cannot prevent and a screenshot
-// can only hint at.
-export const CHAR_WIDTH = 7.2;
+// can only hint at. Measured at 12px: Geist Mono advance is ~8.4px per char.
+export const CHAR_WIDTH = 8.4;
 // Panel headers are drawn semibold, and a bold advance is wider than a regular
 // one at the same size. Measuring both with CHAR_WIDTH is what left "(workspace)"
 // ellipsized inside a box that was provably wide enough for 11 regular characters.
-export const CHAR_WIDTH_BOLD = 7.9;
+export const CHAR_WIDTH_BOLD = 9.2;
 export const PAD_X = 10;
 export const FOLDED_MIN_HEIGHT = 40;
-export const FOLDED_MIN_WIDTH = 120;
+export const FOLDED_MIN_WIDTH = 140;
 export const PANEL_HEADER_HEIGHT = 40;
 // 24, not 20: a 12px row label in a 20px box is cramped, and 24 is on the 4pt
 // rhythm the design system uses everywhere else.
@@ -58,7 +58,7 @@ export function layout(objects: readonly MapObject[], edges: readonly MapEdge[])
   // into columns that edge bundles then crossed; 28 is one step of breathing room,
   // paid for in canvas width, which is checked against a screenshot rather than
   // assumed to be better.
-  g.setGraph({ rankdir: "LR", nodesep: 36, ranksep: 56 });
+  g.setGraph({ rankdir: "LR", nodesep: 42, ranksep: 56 });
   g.setDefaultEdgeLabel(() => ({}));
   for (const o of objects) g.setNode(o.id, sizeOf(o));
   // Several row-level lines between the same two objects are one constraint

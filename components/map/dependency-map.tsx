@@ -222,7 +222,7 @@ function MapCanvas({
 
   return (
     <MapActions.Provider value={actions}>
-      <div ref={canvas} className="h-full w-full">
+      <div ref={canvas} className="h-full w-full pb-8">
       <MapSelection.Provider value={selectionValue}>
         <ReactFlow
           nodes={nodes}
