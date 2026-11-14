@@ -20,6 +20,7 @@ import { targetKey, type ExplainTarget, type ExplanationState, type Freshness } 
 import { DependencyMap } from "./map/dependency-map";
 import { RouteTable } from "./route-table";
 import { Shell } from "./shell";
+import { Tour, type TourStop } from "./tour";
 
 // Owns what the map, the rail and the pane share: which folders are open,
 // what's selected, what's hovered, which category is picked, and what the pane
@@ -58,6 +59,9 @@ export function AnalysisView({
   const [walk, setWalk] = useState<Direction | null>(null);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [category, setCategory] = useState<string | null>(null);
+  // Guided tour: ordered stops, current index. Null index = no tour active.
+  const [tourStops, setTourStops] = useState<TourStop[]>([]);
+  const [tourIndex, setTourIndex] = useState<number | null>(null);
   // The centre column shows the map or the route table; the rail and the pane
   // keep working on either.
   const [centre, setCentre] = useState<"map" | "routes">("map");
@@ -169,78 +173,111 @@ export function AnalysisView({
 
   const deselect = useCallback(() => setSelection(null), []);
 
+  // Guided tour: walk through a sequence of stops, highlighting each on the map.
+  const startTour = useCallback((stops: TourStop[]) => {
+    setTourStops(stops);
+    setTourIndex(0);
+  }, []);
+
+  const goToStop = useCallback(
+    (index: number) => {
+      if (index < 0 || index >= tourStops.length) return;
+      setTourIndex(index);
+      const stop = tourStops[index];
+      reveal(stop.path);
+      setSelection({ kind: "file", path: stop.path });
+    },
+    [tourStops, reveal],
+  );
+
+  const endTour = useCallback(() => {
+    setTourIndex(null);
+    setTourStops([]);
+    setSelection(null);
+  }, []);
+
   return (
-    <Shell
-      rail={
-        <CategoryRail files={files} modelRoles={modelRoles} frameworks={repository.projects.map((p) => p.adapter)} active={category} onToggle={toggleCategory} />
-      }
-      map={
-        <div className="absolute inset-0 flex flex-col">
-          <div role="tablist" className="flex h-7 shrink-0 items-end gap-3 border-b border-line bg-surface px-3 text-[11px]">
-            <CentreTab label="Map" on={centre === "map"} onClick={() => setCentre("map")} />
-            <CentreTab label="Routes" count={routes.length} on={centre === "routes"} onClick={() => setCentre("routes")} />
-          </div>
-          <div className="relative min-h-0 flex-1">
-            {/* The map stays mounted under the table, so switching back keeps its viewport. */}
-            <div className={`absolute inset-0 ${centre === "map" ? "" : "invisible"}`}>
-              <DependencyMap
-                files={files}
-                edges={edges}
-                modelRoles={modelRoles}
-                folding={folding}
-                open={open}
-                selection={selection}
-                hover={hover}
-                refit={refit}
-                category={category}
-                analysisId={analysisId}
-                onOpen={openGroup}
-                onClose={closeGroup}
-                onSelectFile={toggleFile}
-                onScroll={scroll}
-                onHover={setHover}
-                onDeselect={deselect}
-              />
+    <>
+      <Shell
+        rail={
+          <CategoryRail files={files} modelRoles={modelRoles} frameworks={repository.projects.map((p) => p.adapter)} active={category} onToggle={toggleCategory} />
+        }
+        map={
+          <div className="absolute inset-0 flex flex-col">
+            <div role="tablist" className="flex h-7 shrink-0 items-end gap-3 border-b border-line bg-surface px-3 text-[11px]">
+              <CentreTab label="Map" on={centre === "map"} onClick={() => setCentre("map")} />
+              <CentreTab label="Routes" count={routes.length} on={centre === "routes"} onClick={() => setCentre("routes")} />
             </div>
-            {centre === "routes" && (
-              <RouteTable
-                routes={routes}
-                coverage={routeCoverage}
-                selection={selection}
-                hover={hover}
-                onReveal={reveal}
-                onHover={setHover}
-              />
-            )}
+            <div className="relative min-h-0 flex-1">
+              {/* The map stays mounted under the table, so switching back keeps its viewport. */}
+              <div className={`absolute inset-0 ${centre === "map" ? "" : "invisible"}`}>
+                <DependencyMap
+                  files={files}
+                  edges={edges}
+                  modelRoles={modelRoles}
+                  folding={folding}
+                  open={open}
+                  selection={selection}
+                  hover={hover}
+                  refit={refit}
+                  category={category}
+                  analysisId={analysisId}
+                  onOpen={openGroup}
+                  onClose={closeGroup}
+                  onSelectFile={toggleFile}
+                  onScroll={scroll}
+                  onHover={setHover}
+                  onDeselect={deselect}
+                />
+              </div>
+              {centre === "routes" && (
+                <RouteTable
+                  routes={routes}
+                  coverage={routeCoverage}
+                  selection={selection}
+                  hover={hover}
+                  onReveal={reveal}
+                  onHover={setHover}
+                />
+              )}
+            </div>
           </div>
-        </div>
-      }
-      detail={
-        <DetailPane
-          files={files}
-          byPath={byPath}
-          edges={edges}
-          folding={folding}
-          repository={{ ...repository, routes: routes.length }}
-          selection={selection}
-          hover={hover}
-          tab={tab}
-          onTab={setTab}
-          walk={walk}
-          onWalk={setWalk}
-          insightsOpen={insightsOpen}
-          onInsightsOpen={setInsightsOpen}
-          onReveal={reveal}
-          onHover={setHover}
-          modelRoles={modelRoles}
-          analysisId={analysisId}
-          commitSha={commitSha}
-          explanations={explanations}
-          freshness={freshness}
-          onExplain={explain}
+        }
+        detail={
+          <DetailPane
+            files={files}
+            byPath={byPath}
+            edges={edges}
+            folding={folding}
+            repository={{ ...repository, routes: routes.length }}
+            selection={selection}
+            hover={hover}
+            tab={tab}
+            onTab={setTab}
+            walk={walk}
+            onWalk={setWalk}
+            insightsOpen={insightsOpen}
+            onInsightsOpen={setInsightsOpen}
+            onReveal={reveal}
+            onHover={setHover}
+            modelRoles={modelRoles}
+            analysisId={analysisId}
+            commitSha={commitSha}
+            explanations={explanations}
+            freshness={freshness}
+            onExplain={explain}
+          />
+        }
+      />
+      {tourIndex !== null && (
+        <Tour
+          stops={tourStops}
+          index={tourIndex}
+          onGoToStop={goToStop}
+          onEnd={endTour}
         />
-      }
-    />
+      )}
+    </>
   );
 }
 

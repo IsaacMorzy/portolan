@@ -406,6 +406,23 @@ Memory is `policy-only` (full style, 5000-char limits, review enabled, auto-cons
 
 Trust is per-directory in `trust.json`; `/home/sage/Documents/frontend/nextjs/codegraph` is trusted. Vision is enabled (cline provider, nemotron model, audit log on) — screenshots and image reads go through it.
 
+### Pi codemode
+
+pi v1.4.0 includes a built-in **codemode** extension. It is not installed via npm — enable it in `~/.pi/agent/settings.json` with `"defaultTools": ["+codemode"]` (already done in this repo's environment) or per-invocation with `pi --tools +codemode`.
+
+Codemode runs JavaScript in a QuickJS sandbox that calls pi's other tools (`tools.read`, `tools.write`, `tools.edit`, `tools.bash`, etc.) in parallel, filters output before it reaches the model, and can call classifier/image models through `models.*`. The script's return value or `text()` calls are what the model sees — everything else is filtered out.
+
+```js
+// Example codemode script
+const pkg = await tools.read({ path: "package.json" });
+const parsed = JSON.parse(listing);
+return { name: parsed.name, version: parsed.version };
+```
+
+Codemode scripts have no Node.js, file system, or network access directly — they reach the outside world only through `tools.*` and `models.*`. They are useful for parallel tool calls, filtering large outputs, and calling classifier/image models.
+
+**Limitation in this environment:** The `pi-permission-system` extension blocks tool calls in headless sessions (no interactive UI for approval). Codemode scripts that call `read`, `bash`, `edit`, or `write` will be denied until an interactive approval UI is available. Codemode works fully when run with `herdr-agent-state.ts` providing session context and `HERDR_ENV=1` set.
+
 ### Hooks: what fails automatically
 
 `.githooks/pre-commit` runs before every commit (`git config core.hooksPath
