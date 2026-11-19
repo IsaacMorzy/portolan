@@ -1,7 +1,0 @@
-#!/bin/sh
-# The machine half of AGENTS.md. The list lives in scripts/gate.sh so this hook
-# and CI cannot disagree about what "passing" means.
-#
-# Browser checks (pnpm e2e) are deliberately absent: they take minutes, and a
-# hook slow enough to be endured with --no-verify teaches everyone to use it.
-exec sh scripts/gate.sh

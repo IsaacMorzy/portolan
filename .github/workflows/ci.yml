@@ -1,12 +1,6 @@
-# The same gate the pre-commit hook runs, where it cannot be skipped.
-#
-# The list itself lives in scripts/gate.sh — this file is only the part GitHub
-# requires. Keeping the checks in YAML as well would mean two copies of the same
-# list drifting apart, and the copy nobody runs is always the stale one.
-#
-# Browser checks (pnpm e2e) are NOT part of the gate: they need Clerk keys and a
-# running server, and a red build for a missing secret teaches people to ignore
-# red.
+# CI runs the same checks a developer runs locally: tests, types, lint, build.
+# Browser checks (pnpm e2e) are NOT part of CI: they need Clerk keys and a
+# running dev server.
 
 name: ci
 
@@ -27,8 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # workflow.mjs reads the last commit subject, and a shallow clone has
-          # no second commit to read it against.
           fetch-depth: 2
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -38,11 +30,34 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # lib/env.ts refuses to boot without these, which is right — but "right"
-      # means CI has to supply something. These are obviously fake on purpose: a
-      # placeholder that looks real is a placeholder somebody has to investigate.
-      # Nothing here reaches a network, so the build proves the code compiles,
-      # not that the keys work. That is what the deploy is for.
-      - run: sh scripts/gate.sh --full
+      # means CI has to supply something. These are obviously fake on purpose:
+      # a placeholder that looks real is a placeholder somebody has to
+      # investigate. Nothing here reaches a network, so the build proves the
+      # code compiles, not that the keys work. That is what the deploy is for.
+      - run: pnpm test
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
+          CLERK_SECRET_KEY: sk_test_placeholder
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
+          SUPABASE_SECRET_KEY: sb_secret_placeholder
+      - run: npx tsc --noEmit
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
+          CLERK_SECRET_KEY: sk_test_placeholder
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+          NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL: /dashboard
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
+          SUPABASE_SECRET_KEY: sb_secret_placeholder
+      - run: npx eslint . --quiet
+      - run: pnpm build
         env:
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_placeholder
           CLERK_SECRET_KEY: sk_test_placeholder

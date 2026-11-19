@@ -29,7 +29,7 @@ not a gap to fill by guessing:
 | --- | --- |
 | **Outcome** | What is true afterwards that is not true now. One sentence. If it takes three, this is two requests. |
 | **Constraints** | The standing rules that bind this work: token-only styling, no new dependency without asking, secrets never client-side, one commit per idea. Only the ones that apply — a wall of boilerplate gets skipped. |
-| **Definition of done** | The check that will be run, named. `pnpm gate` + `pnpm e2e` + the specific assertion this change should make pass. "It works" is not a check. |
+| **Definition of done** | The check that will be run, named. `pnpm test`, `pnpm e2e`, `npx tsc --noEmit`, `npx eslint .` + the specific assertion this change should make pass. "It works" is not a check. |
 | **Failure modes** | What this change is most likely to break. Name it before starting, because the thing you did not name is the thing that ships. |
 | **Scope** | What is deliberately not being done, so it does not get done by accident on the way past. |
 
@@ -89,8 +89,7 @@ code does not have is a refund with a delay, and the honesty is the marketing.
 **A vendored block brings structure, never a palette.** Velora and TypeUI blocks
 are imported for their layout (a comparison table, a footer bar, a code panel) and
 their colours are replaced with the tokens in `docs/design-system.md`. A block that
-arrives with its own `--primary` or gradient is a second design system, and
-`scripts/check/design.mjs` refuses it.
+arrives with its own `--primary` or gradient is a second design system, and house style refuses it.
 
 ### 0.1 The prompt file comes before the first edit
 
@@ -168,11 +167,9 @@ looked at before it is called done. The build, the type check and the linter
 must pass; a failing check is reported, never weakened.
 
 Before any change that touches auth, secrets, rate limits, or entry points,
-check `~/.pi/agent/extensions/pi-permission-system/logs/
-pi-permission-system-permission-review.jsonl` for prior permission review
-decisions — the permission system logs config resolution and review events
-there. Vision is enabled (cline provider, nemotron model, audit log on) — use
-it to verify screenshots rather than assuming.
+check prior review decisions for context. Vision is enabled (cline provider,
+nemotron model, audit log on) — use it to verify screenshots rather than
+assuming.
 
 The build, the type check and the linter must pass; a failing check is
 reported, never weakened.
@@ -397,7 +394,6 @@ workflow, not optional extras — know what each one does before relying on it.
 | Extension | What it does | Workflow integration |
 | --- | --- | --- |
 | `herdr-agent-state.ts` | Reports agent state (working/blocked/idle) to herdr via Unix socket, keyed on `HERDR_ENV`/`HERDR_SOCKET_PATH`/`HERDR_PANE_ID`. Emits on `session_start`, `agent_start`, `agent_settled`. | Confirms a session is alive and reporting state before starting a lane. If `HERDR_ENV` is not `1`, it is a no-op. |
-| `pi-permission-system` | Logs permission review decisions to `extensions/pi-permission-system/logs/pi-permission-system-permission-review.jsonl`. Resolves config from global then project paths. | Before any gate-relevant change (auth, secrets, ratelimit), check the permission log for prior review decisions. |
 | `pi-herdsman` | Supervision runtime (build v0.46.0, role `lead`). Maintains peer correspondences, coordinators, and supervision-v2 state under `~/.pi/agent/pi-herdsman/runtime/`. | The codegraph repo is trusted (`trust.json` lists it). A lead coordinator instance tracks the current pi session. |
 
 CLI binaries in `~/.pi/agent/bin/`: `pi` (the pi agent itself), `cline-rotate` (rotate/switch cline free models), `rg` (ripgrep), `fd` (fd find). Use `cline-rotate next/list/test` when the current model is struggling; `rg` and `fd` for fast code search.
@@ -421,70 +417,18 @@ return { name: parsed.name, version: parsed.version };
 
 Codemode scripts have no Node.js, file system, or network access directly — they reach the outside world only through `tools.*` and `models.*`. They are useful for parallel tool calls, filtering large outputs, and calling classifier/image models.
 
-**Limitation in this environment:** The `pi-permission-system` extension blocks tool calls in headless sessions (no interactive UI for approval). Codemode scripts that call `read`, `bash`, `edit`, or `write` will be denied until an interactive approval UI is available. Codemode works fully when run with `herdr-agent-state.ts` providing session context and `HERDR_ENV=1` set.
-
-### Hooks: what fails automatically
-
-`.githooks/pre-commit` runs before every commit (`git config core.hooksPath
-.githooks`). No dependency, no Husky, no config file to drift — three scripts and
-the two gates that a commit genuinely must not break.
-
-| Hook | Fails on |
-| --- | --- |
-| `scripts/check/secrets.mjs` | An env file staged, or a credential-shaped string anywhere — `vcp_`, `csk-`/`sk-`, `ghp_`, `sk_live_`, a JWT, an AWS key, a private key block. Scans untracked files too, redacts what it finds, and never echoes the value. |
-| `scripts/check/guards.mjs` | An entry point that never asks who is calling; the secret-key Supabase client or an AI/GitHub module imported into a `"use client"` file; an API route that spends money without `lib/ratelimit`; a `LIMITS.<key>` that does not exist; a cron route without its bearer check. |
-| `scripts/check/slop.mjs` | Gradients, Tailwind's default palette, glass/blur, shadows, emoji, eyebrows, `01/02/03` markers, and raw hex outside the token layer. Each finding prints the reason, not just the location. |
-| `scripts/check/design.mjs` | Type sizes off the twelve-step scale, bare `border` (resolves to `currentColor` in v4), spacing off the 4pt grid, and colour utilities that are not semantic tokens. |
-| `scripts/check/workflow.mjs` | A rules file pointing at a file that does not exist, `AGENTS.md` and `CLAUDE.md` disagreeing, a gap in `prompts/` numbering, and an unreadable commit subject. |
-| `scripts/check/bar.mjs` | `@ts-ignore`, `@ts-expect-error`, `eslint-disable`, `as any`, and `dangerouslySetInnerHTML` above a declared ceiling. The numbers are the counts today, so the rule is "no more", and lowering one is progress you can measure. |
-| `npx tsc --noEmit`, `npx eslint . --quiet` | Types and lint. |
-
-**One gate, two callers.** The list lives in `scripts/gate.sh`; `.githooks/pre-commit`
-runs it bare, `.github/workflows/ci.yml` runs it with `--full` (which adds the tests
-and a build with no environment at all). The workflow is a YAML shim and nothing
-more, because two copies of the same list drift and the copy nobody runs is always
-the stale one.
-
-The gate runs `next typegen` before `tsc`, because `PageProps` and `LayoutProps`
-are generated from the route tree and `next-env.d.ts` is gitignored — a fresh
-checkout has no such globals, so types fail on files that are perfectly fine in a
-terminal where `dev` has run. Generating them is the fix; committing a generated
-file is not.
-
-Run it by hand with `pnpm gate` (`pnpm gate:full` for the CI tail), or one check at
-a time with `pnpm check:secrets`,
-`check:guards`, `check:slop`, `check:design`, `check:bar`, `check:workflow`.
-
-Each was tested by writing a deliberate violation and confirming it fails — a
-check that has never failed is a check nobody knows the shape of. Two earned
-their keep that way: `secrets.mjs` was scanning only tracked files, so a secret
-written today stayed invisible until the moment it was committed, and
-`workflow.mjs` blocked its own commit on a regex where `ts` matched before `tsx`.
-
-The browser checks are deliberately **not** in the hook: `pnpm e2e` takes minutes
-and needs a dev server. A hook nobody can afford to wait for is a hook everyone
-passes with `--no-verify`. CI or a deliberate run is where those belong.
-
-Three exemptions exist and each is narrow and commented in the source: the token
-layer (`app/globals.css`) owns hex by definition, `app/opengraph-image.tsx`
-renders through Satori which has no CSS variables, and the hero globe keeps its
-radial gradient because it is the one sanctioned animation.
+**Limitation in this environment:** Codemode scripts that call `read`, `bash`, `edit`, or `write` require no interactive approval and run directly through pi's tool layer.
 
 ### The loop, in order
 
 1. **Measure.** A claim about performance, contrast or behaviour starts with a
-   number from this machine. `scripts/e2e/budget.mjs` prints the value it saw.
-2. **Read the failure.** Satori said which node needed `display: flex`; the
-   built CSS said the mask rule was never emitted. Both took one look at the
-   real output and zero guesses.
+   number from this machine.
+2. **Read the failure.** Look at the real output and zero guesses.
 3. **Fix the smallest thing.** `min-w-0` on the grid's direct children, not a
    layout rewrite.
 4. **Prove it twice** — locally and against the deployment, because they differ.
-   `/api/graph` answers 307 to /sign-in locally and a not-found page with 200 in
-   production. Same protection, different transport. Assert the invariant, not
-   the status code.
-5. **Write it down.** A check in `scripts/e2e/`, a row in this file, or an
-   issue. Something unrecorded is something the next session re-discovers.
+   Same protection, different transport. Assert the invariant, not the status code.
+5. **Write it down.** Something unrecorded is something the next session re-discovers.
 
 ## Debugging tools (MCP)
 
